@@ -1,0 +1,99 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* Custom scrollbar styles */
+@layer utilities {
+    /* For Webkit browsers */
+    .scrollbar-thin::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    .scrollbar-thin::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 3px;
+    }
+
+    .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+
+    /* For Firefox */
+    .scrollbar-thin {
+        scrollbar-width: thin;
+        scrollbar-color: #888 #f1f1f1;
+    }
+}
+
+/* Custom focus styles */
+@layer base {
+    *:focus {
+        outline: none;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+        @apply ring-2 ring-blue-500 ring-opacity-50;
+    }
+
+    button:focus {
+        @apply ring-2 ring-offset-2 ring-blue-500;
+    }
+}
+
+/* Loading animation */
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.animate-shimmer {
+    background: linear-gradient(
+            90deg,
+            #f0f0f0 25%,
+            #e0e0e0 50%,
+            #f0f0f0 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+/* Transitions */
+.transition-height {
+    transition-property: height;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 300ms;
+}
+
+/* Print styles */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+
+    body {
+        font-size: 12pt;
+    }
+
+    .print-break-after {
+        page-break-after: always;
+    }
+
+    .print-break-before {
+        page-break-before: always;
+    }
+
+    .print-break-inside-avoid {
+        page-break-inside: avoid;
+    }
+}
