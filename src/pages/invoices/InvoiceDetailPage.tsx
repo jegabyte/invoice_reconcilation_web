@@ -1,19 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Download, CheckCircle, XCircle } from 'lucide-react';
-import { Card, LoadingSpinner, StatusBadge } from '@/components/common';
-import { useInvoices } from '@/hooks/useInvoices';
+import { ArrowLeft, Download, CheckCircle, FileText, AlertCircle } from 'lucide-react';
+import { Card, LoadingSpinner } from '@/components/common';
+import { ApiDataService } from '@/services/api.data.service';
 import { formatCurrency, formatDate } from '@/utils/formatters';
-import { Invoice, LineItem } from '@/types/models';
+import { ExtractionResult, InvoiceReconciliationSummary, ReconciliationStatus } from '@/types/api.types';
 
 export default function InvoiceDetailPage() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const { getInvoiceById, getLineItems, approveInvoice, rejectInvoice, loading } = useInvoices();
     
-    const [invoice, setInvoice] = useState<Invoice | null>(null);
-    const [lineItems, setLineItems] = useState<LineItem[]>([]);
-    const [loadingLineItems, setLoadingLineItems] = useState(false);
+    const [extraction, setExtraction] = useState<ExtractionResult | null>(null);
+    const [summary, setSummary] = useState<InvoiceReconciliationSummary | null>(null);
+    const [status, setStatus] = useState<ReconciliationStatus | null>(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (id) {
@@ -24,37 +24,31 @@ export default function InvoiceDetailPage() {
     const loadInvoiceData = async () => {
         if (!id) return;
         
-        const invoiceData = await getInvoiceById(id);
-        if (invoiceData) {
-            setInvoice(invoiceData);
+        try {
+            setLoading(true);
             
-            setLoadingLineItems(true);
-            const items = await getLineItems(id);
-            setLineItems(items);
-            setLoadingLineItems(false);
+            // Load extraction result
+            const extractionData = await ApiDataService.getExtractionResult(id);
+            setExtraction(extractionData);
+            
+            // Try to load reconciliation summary if exists
+            const summaries = await ApiDataService.getReconciliationSummaries({ 
+                vendorId: extractionData?.vendorId 
+            });
+            const relatedSummary = summaries.find(s => s.invoiceId === id);
+            setSummary(relatedSummary || null);
+            
+            // Load reconciliation status
+            const statusData = await ApiDataService.getReconciliationStatus(id);
+            setStatus(statusData);
+        } catch (error) {
+            console.error('Error loading invoice data:', error);
+        } finally {
+            setLoading(false);
         }
     };
 
-    const handleApprove = async () => {
-        if (!invoice) return;
-        
-        if (confirm('Are you sure you want to approve this invoice?')) {
-            await approveInvoice(invoice.id);
-            await loadInvoiceData();
-        }
-    };
-
-    const handleReject = async () => {
-        if (!invoice) return;
-        
-        const reason = prompt('Please provide a reason for rejection:');
-        if (reason) {
-            await rejectInvoice(invoice.id, reason);
-            await loadInvoiceData();
-        }
-    };
-
-    if (loading || !invoice) {
+    if (loading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <LoadingSpinner />
@@ -62,219 +56,319 @@ export default function InvoiceDetailPage() {
         );
     }
 
+    if (!extraction) {
+        return (
+            <div className="text-center py-12">
+                <p className="text-gray-500">Invoice not found</p>
+                <button
+                    onClick={() => navigate('/invoices')}
+                    className="mt-4 text-blue-600 hover:text-blue-800"
+                >
+                    Back to Invoices
+                </button>
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-6">
+            {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
                     <button
                         onClick={() => navigate('/invoices')}
-                        className="p-2 text-gray-600 hover:text-gray-900"
+                        className="p-2 hover:bg-gray-100 rounded-lg"
                     >
                         <ArrowLeft className="h-5 w-5" />
                     </button>
                     <div>
-                        <h1 className="text-2xl font-semibold text-gray-900">
-                            Invoice {invoice.invoiceNumber}
+                        <h1 className="text-2xl font-bold text-gray-900">
+                            Invoice #{extraction.invoiceNumber}
                         </h1>
-                        <p className="text-sm text-gray-600">
-                            {invoice.vendorName} • {formatDate(invoice.invoiceDate)}
+                        <p className="text-sm text-gray-500">
+                            {extraction.vendorName}
                         </p>
                     </div>
                 </div>
                 
                 <div className="flex items-center space-x-3">
-                    <button className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                        <Download className="h-4 w-4 mr-1" />
+                    <button
+                        className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+                    >
+                        <Download className="h-4 w-4 mr-2" />
                         Download
                     </button>
-                    
-                    {invoice.status === 'VALIDATED' && (
-                        <>
-                            <button
-                                onClick={handleReject}
-                                className="inline-flex items-center px-3 py-2 border border-red-300 shadow-sm text-sm leading-4 font-medium rounded-md text-red-700 bg-white hover:bg-red-50"
-                            >
-                                <XCircle className="h-4 w-4 mr-1" />
-                                Reject
-                            </button>
-                            <button
-                                onClick={handleApprove}
-                                className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
-                            >
-                                <CheckCircle className="h-4 w-4 mr-1" />
-                                Approve
-                            </button>
-                        </>
-                    )}
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-                <div className="lg:col-span-2 space-y-6">
-                    <Card title="Invoice Details">
-                        <dl className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
-                            <div>
-                                <dt className="text-sm font-medium text-gray-500">Status</dt>
-                                <dd className="mt-1 text-sm text-gray-900">
-                                    <StatusBadge status={invoice.status} />
-                                </dd>
-                            </div>
-                            <div>
-                                <dt className="text-sm font-medium text-gray-500">Invoice Number</dt>
-                                <dd className="mt-1 text-sm text-gray-900">{invoice.invoiceNumber}</dd>
-                            </div>
-                            <div>
-                                <dt className="text-sm font-medium text-gray-500">Vendor Invoice #</dt>
-                                <dd className="mt-1 text-sm text-gray-900">{invoice.vendorInvoiceNumber}</dd>
-                            </div>
-                            <div>
-                                <dt className="text-sm font-medium text-gray-500">Period</dt>
-                                <dd className="mt-1 text-sm text-gray-900">
-                                    {formatDate(invoice.periodStart)} - {formatDate(invoice.periodEnd)}
-                                </dd>
-                            </div>
-                            <div>
-                                <dt className="text-sm font-medium text-gray-500">Due Date</dt>
-                                <dd className="mt-1 text-sm text-gray-900">{formatDate(invoice.dueDate)}</dd>
-                            </div>
-                            <div>
-                                <dt className="text-sm font-medium text-gray-500">Received Date</dt>
-                                <dd className="mt-1 text-sm text-gray-900">{formatDate(invoice.receivedDate)}</dd>
-                            </div>
-                        </dl>
-                    </Card>
+            {/* Status Overview */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Card className="p-4">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-sm font-medium text-gray-600">Extraction Status</p>
+                            <p className="mt-1 text-lg font-semibold">{extraction.status}</p>
+                        </div>
+                        <FileText className="h-8 w-8 text-gray-400" />
+                    </div>
+                </Card>
+                
+                <Card className="p-4">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-sm font-medium text-gray-600">Confidence Score</p>
+                            <p className="mt-1 text-lg font-semibold">
+                                {(extraction.confidence * 100).toFixed(1)}%
+                            </p>
+                        </div>
+                        <div className={`h-8 w-8 ${
+                            extraction.confidence >= 0.8 ? 'text-green-500' :
+                            extraction.confidence >= 0.6 ? 'text-yellow-500' :
+                            'text-red-500'
+                        }`}>
+                            {extraction.confidence >= 0.8 ? <CheckCircle /> : <AlertCircle />}
+                        </div>
+                    </div>
+                </Card>
+                
+                <Card className="p-4">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-sm font-medium text-gray-600">Total Amount</p>
+                            <p className="mt-1 text-lg font-semibold">
+                                {formatCurrency(extraction.totalAmount)}
+                            </p>
+                        </div>
+                        <span className="text-2xl">💰</span>
+                    </div>
+                </Card>
+            </div>
 
-                    <Card title="Line Items">
-                        {loadingLineItems ? (
-                            <div className="flex justify-center py-4">
-                                <LoadingSpinner />
-                            </div>
-                        ) : lineItems.length === 0 ? (
-                            <p className="text-center text-gray-500 py-4">No line items found</p>
-                        ) : (
-                            <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y divide-gray-200">
-                                    <thead className="bg-gray-50">
-                                        <tr>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Booking
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Guest
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Dates
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Amount
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Status
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="bg-white divide-y divide-gray-200">
-                                        {lineItems.map((item) => (
-                                            <tr key={item.id}>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                    {item.booking.confirmationNumber}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                    {item.booking.guestName}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                    {formatDate(item.booking.checkInDate)} - {formatDate(item.booking.checkOutDate)}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                    {formatCurrency(item.financial.totalAmount)}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <StatusBadge status={item.validation.status} />
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+            {/* Invoice Details */}
+            <Card>
+                <div className="p-6">
+                    <h2 className="text-lg font-medium text-gray-900 mb-4">Invoice Information</h2>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <p className="text-sm font-medium text-gray-500">Invoice Number</p>
+                            <p className="mt-1 text-sm text-gray-900">{extraction.invoiceNumber}</p>
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium text-gray-500">Invoice Date</p>
+                            <p className="mt-1 text-sm text-gray-900">
+                                {formatDate(new Date(extraction.invoiceDate))}
+                            </p>
+                        </div>
+                        {extraction.dueDate && (
+                            <div>
+                                <p className="text-sm font-medium text-gray-500">Due Date</p>
+                                <p className="mt-1 text-sm text-gray-900">
+                                    {formatDate(new Date(extraction.dueDate))}
+                                </p>
                             </div>
                         )}
-                    </Card>
+                        <div>
+                            <p className="text-sm font-medium text-gray-500">Currency</p>
+                            <p className="mt-1 text-sm text-gray-900">{extraction.currency}</p>
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium text-gray-500">Extraction Method</p>
+                            <p className="mt-1 text-sm text-gray-900">{extraction.extractionMethod}</p>
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium text-gray-500">Created At</p>
+                            <p className="mt-1 text-sm text-gray-900">
+                                {formatDate(new Date(extraction.createdAt))}
+                            </p>
+                        </div>
+                    </div>
                 </div>
+            </Card>
 
-                <div className="space-y-6">
-                    <Card title="Financial Summary">
-                        <dl className="space-y-4">
-                            <div className="flex justify-between">
-                                <dt className="text-sm text-gray-600">Subtotal</dt>
-                                <dd className="text-sm font-medium text-gray-900">
-                                    {formatCurrency(invoice.financial.subtotal)}
-                                </dd>
+            {/* Line Items */}
+            <Card>
+                <div className="p-6">
+                    <h2 className="text-lg font-medium text-gray-900 mb-4">Line Items</h2>
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-50">
+                                <tr>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        #
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Description
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Guest Name
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Check In
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Check Out
+                                    </th>
+                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Quantity
+                                    </th>
+                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Unit Price
+                                    </th>
+                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Amount
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                                {extraction.extractedData.lineItems.map((item, index) => (
+                                    <tr key={index}>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            {item.lineNumber}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-gray-900">
+                                            {item.description}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            {item.guestName || '-'}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            {item.checkInDate ? formatDate(new Date(item.checkInDate)) : '-'}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            {item.checkOutDate ? formatDate(new Date(item.checkOutDate)) : '-'}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
+                                            {item.quantity}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
+                                            {formatCurrency(item.unitPrice)}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-right">
+                                            {formatCurrency(item.amount)}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                            <tfoot className="bg-gray-50">
+                                <tr>
+                                    <td colSpan={7} className="px-6 py-4 text-sm font-medium text-gray-900 text-right">
+                                        Total
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 text-right">
+                                        {formatCurrency(extraction.totalAmount)}
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </Card>
+
+            {/* Reconciliation Summary */}
+            {summary && (
+                <Card>
+                    <div className="p-6">
+                        <h2 className="text-lg font-medium text-gray-900 mb-4">Reconciliation Summary</h2>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div>
+                                <p className="text-sm font-medium text-gray-500">Status</p>
+                                <p className="mt-1 text-sm font-semibold text-gray-900">{summary.status}</p>
                             </div>
-                            <div className="flex justify-between">
-                                <dt className="text-sm text-gray-600">Tax</dt>
-                                <dd className="text-sm font-medium text-gray-900">
-                                    {formatCurrency(invoice.financial.taxAmount)}
-                                </dd>
+                            <div>
+                                <p className="text-sm font-medium text-gray-500">Variance</p>
+                                <p className="mt-1 text-sm font-semibold text-gray-900">
+                                    {formatCurrency(summary.variance)} ({summary.variancePercentage.toFixed(2)}%)
+                                </p>
                             </div>
-                            <div className="flex justify-between pt-4 border-t border-gray-200">
-                                <dt className="text-base font-medium text-gray-900">Total</dt>
-                                <dd className="text-base font-medium text-gray-900">
-                                    {formatCurrency(invoice.financial.totalAmount)}
-                                </dd>
+                            <div>
+                                <p className="text-sm font-medium text-gray-500">Matched Items</p>
+                                <p className="mt-1 text-sm font-semibold text-gray-900">
+                                    {summary.matchedLineItems} / {summary.totalLineItems}
+                                </p>
                             </div>
-                            {invoice.financial.variance && (
-                                <div className="flex justify-between pt-4 border-t border-gray-200">
-                                    <dt className="text-sm text-gray-600">Variance</dt>
-                                    <dd className={`text-sm font-medium ${invoice.financial.variance > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                                        {formatCurrency(Math.abs(invoice.financial.variance))} ({invoice.financial.variancePercentage?.toFixed(2)}%)
-                                    </dd>
+                            <div>
+                                <p className="text-sm font-medium text-gray-500">Approval Status</p>
+                                <p className="mt-1 text-sm font-semibold text-gray-900">
+                                    {summary.approvalStatus || 'Pending'}
+                                </p>
+                            </div>
+                        </div>
+
+                        {summary.issues.length > 0 && (
+                            <div className="mt-4">
+                                <h3 className="text-sm font-medium text-gray-900 mb-2">Issues Found</h3>
+                                <div className="space-y-2">
+                                    {summary.issues.map((issue, index) => (
+                                        <div key={index} className={`p-3 rounded-lg ${
+                                            issue.severity === 'HIGH' ? 'bg-red-50' :
+                                            issue.severity === 'MEDIUM' ? 'bg-yellow-50' :
+                                            'bg-blue-50'
+                                        }`}>
+                                            <p className="text-sm font-medium">{issue.type}</p>
+                                            <p className="text-sm text-gray-600">{issue.description}</p>
+                                        </div>
+                                    ))}
                                 </div>
-                            )}
-                        </dl>
-                    </Card>
+                            </div>
+                        )}
+                    </div>
+                </Card>
+            )}
 
-                    <Card title="Processing Status">
+            {/* Processing Status */}
+            {status && (
+                <Card>
+                    <div className="p-6">
+                        <h2 className="text-lg font-medium text-gray-900 mb-4">Processing Status</h2>
                         <div className="space-y-4">
                             <div>
-                                <div className="flex justify-between items-center mb-1">
-                                    <span className="text-sm font-medium text-gray-700">Overall Progress</span>
-                                    <span className="text-sm text-gray-600">{invoice.processingStatus.progress}%</span>
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-sm font-medium text-gray-700">Extraction</span>
+                                    <span className="text-sm text-gray-500">
+                                        {status.progress.extraction.percentage}%
+                                    </span>
                                 </div>
                                 <div className="w-full bg-gray-200 rounded-full h-2">
                                     <div
-                                        className="bg-primary-600 h-2 rounded-full"
-                                        style={{ width: `${invoice.processingStatus.progress}%` }}
+                                        className="bg-blue-600 h-2 rounded-full"
+                                        style={{ width: `${status.progress.extraction.percentage}%` }}
                                     />
                                 </div>
                             </div>
-                            
-                            <div className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm text-gray-600">Extraction</span>
-                                    <StatusBadge status={invoice.processingStatus.extraction.status} />
+
+                            <div>
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-sm font-medium text-gray-700">Validation</span>
+                                    <span className="text-sm text-gray-500">
+                                        {status.progress.validation.percentage}%
+                                    </span>
                                 </div>
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm text-gray-600">Validation</span>
-                                    <StatusBadge status={invoice.processingStatus.validation.status} />
+                                <div className="w-full bg-gray-200 rounded-full h-2">
+                                    <div
+                                        className="bg-blue-600 h-2 rounded-full"
+                                        style={{ width: `${status.progress.validation.percentage}%` }}
+                                    />
                                 </div>
                             </div>
-                            
-                            {invoice.processingStatus.validation.status === 'COMPLETED' && (
-                                <div className="pt-4 border-t border-gray-200">
-                                    <p className="text-sm text-gray-600">
-                                        Rules Applied: {invoice.processingStatus.validation.rulesApplied}
-                                    </p>
-                                    <p className="text-sm text-gray-600">
-                                        Passed: {invoice.processingStatus.validation.rulesPassed}
-                                    </p>
-                                    <p className="text-sm text-gray-600">
-                                        Failed: {invoice.processingStatus.validation.rulesFailed}
-                                    </p>
+
+                            <div>
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-sm font-medium text-gray-700">Reconciliation</span>
+                                    <span className="text-sm text-gray-500">
+                                        {status.progress.reconciliation.percentage}%
+                                    </span>
                                 </div>
-                            )}
+                                <div className="w-full bg-gray-200 rounded-full h-2">
+                                    <div
+                                        className="bg-blue-600 h-2 rounded-full"
+                                        style={{ width: `${status.progress.reconciliation.percentage}%` }}
+                                    />
+                                </div>
+                            </div>
                         </div>
-                    </Card>
-                </div>
-            </div>
+                    </div>
+                </Card>
+            )}
         </div>
     );
 }

@@ -15,7 +15,17 @@ export default defineConfig({
         open: true,
     },
     build: {
-        outDir: 'build',
+        outDir: 'dist',
         sourcemap: true,
+        // Skip type checking during build
+        rollupOptions: {
+            onwarn(warning, warn) {
+                // Skip certain warnings
+                if (warning.code === 'MODULE_LEVEL_DIRECTIVE') {
+                    return
+                }
+                warn(warning)
+            }
+        }
     },
 })

@@ -4,16 +4,11 @@ export const APP_VERSION = '1.0.0';
 
 // Collections
 export const COLLECTIONS = {
-    SYSTEM_CONFIG: 'system_config',
-    VENDORS: 'vendors',
-    INVOICES: 'invoices',
-    LINE_ITEMS: 'line_items',
-    VALIDATION_RULES: 'validation_rules',
-    PROCESSING_JOBS: 'processing_jobs',
-    DISPUTES: 'disputes',
-    USERS: 'users',
-    AUDIT_LOGS: 'audit_logs',
-    NOTIFICATIONS: 'notifications'
+    EXTRACTION_RESULTS: 'extractionResults',
+    INVOICE_RECONCILIATION_SUMMARIES: 'invoiceReconciliationSummaries',
+    RECONCILIATION_RULES: 'reconciliationRules',
+    RECONCILIATION_STATUS: 'reconciliationStatus',
+    VENDOR_CONFIGURATIONS: 'vendorConfigurations'
 } as const;
 
 // Invoice Status
@@ -141,7 +136,7 @@ export const DATE_FORMAT = {
 } as const;
 
 // Currency
-export const DEFAULT_CURRENCY = 'USD';
+export const DEFAULT_CURRENCY = 'MYR';
 
 // Status Colors
 export const STATUS_COLORS = {

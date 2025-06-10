@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Modal } from '@/components/common';
-import { ValidationRule, RuleCondition, Timestamp } from '@/types/models';
+import { ValidationRule, RuleCondition } from '@/types/models';
 import { Plus, Trash2, ChevronDown, ChevronUp, Info } from 'lucide-react';
 import { ConditionForm } from './ConditionForm';
 
@@ -50,10 +50,10 @@ export default function AddRuleModal({ isOpen, onClose, onSave, editingRule }: A
     useEffect(() => {
         if (editingRule) {
             // Helper function to format date for datetime-local input
-            const formatDateForInput = (timestamp: Timestamp | undefined) => {
+            const formatDateForInput = (timestamp: string | Date | undefined) => {
                 if (!timestamp) return '';
-                // Convert Firestore Timestamp to Date
-                const date = timestamp.toDate();
+                // Convert to Date if needed
+                const date = typeof timestamp === 'string' ? new Date(timestamp) : timestamp;
                 // Format: yyyy-MM-ddThh:mm
                 return date.toISOString().slice(0, 16);
             };

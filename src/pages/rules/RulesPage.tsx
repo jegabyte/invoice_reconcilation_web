@@ -1,37 +1,58 @@
 import { useState } from 'react';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, Filter } from 'lucide-react';
 import { useRules } from '@/hooks/useRules';
-import { RulesList } from '@/components/rules/RulesList';
+import { useVendors } from '@/hooks/useVendors';
 import AddRuleModal from '@/components/rules/AddRuleModal';
 import ViewRuleModal from '@/components/rules/ViewRuleModal';
-import { LoadingSpinner, ErrorMessage } from '@/components/common';
-import { ValidationRule } from '@/types/models';
+import { LoadingSpinner, Card } from '@/components/common';
+import { ReconciliationRule } from '@/types/api.types';
 
 export default function RulesPage() {
     const [showAddModal, setShowAddModal] = useState(false);
-    const [editingRule, setEditingRule] = useState<ValidationRule | null>(null);
-    const [viewingRule, setViewingRule] = useState<ValidationRule | null>(null);
-    const [filters, setFilters] = useState({
-        searchTerm: '',
-        vendorCode: ''
-    });
+    const [editingRule, setEditingRule] = useState<ReconciliationRule | null>(null);
+    const [viewingRule, setViewingRule] = useState<ReconciliationRule | null>(null);
+    const [selectedVendor, setSelectedVendor] = useState('');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [sortBy, setSortBy] = useState<'priority' | 'name' | 'status'>('priority');
 
+    const { vendors } = useVendors();
     const {
         rules,
         loading,
         error,
         createRule,
         updateRule,
-        deleteRule
-    } = useRules({
-        vendorCode: filters.vendorCode || undefined,
-        searchTerm: filters.searchTerm || undefined,
-        realtime: true
-    });
+        deleteRule,
+        toggleRuleStatus
+    } = useRules(selectedVendor);
 
-    const handleCreateRule = async (ruleData: any) => {
+    const filteredAndSortedRules = rules
+        .filter(rule => {
+            const matchesSearch = searchTerm === '' ||
+                rule.ruleName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                (rule.description && rule.description.toLowerCase().includes(searchTerm.toLowerCase()));
+
+            return matchesSearch;
+        })
+        .sort((a, b) => {
+            switch (sortBy) {
+                case 'priority':
+                    return a.priority - b.priority;
+                case 'name':
+                    return a.ruleName.localeCompare(b.ruleName);
+                case 'status':
+                    return (b.isActive ? 1 : 0) - (a.isActive ? 1 : 0);
+                default:
+                    return 0;
+            }
+        });
+
+    const handleCreateRule = async (ruleData: Omit<ReconciliationRule, 'id' | 'createdAt' | 'updatedAt' | 'usageCount' | 'lastUsed'>) => {
         try {
-            await createRule(ruleData);
+            await createRule({
+                ...ruleData,
+                description: ruleData.description || ''
+            });
             setShowAddModal(false);
         } catch (error) {
             console.error('Error creating rule:', error);
@@ -39,7 +60,7 @@ export default function RulesPage() {
         }
     };
 
-    const handleUpdateRule = async (ruleId: string, updates: any) => {
+    const handleUpdateRule = async (ruleId: string, updates: Partial<ReconciliationRule>) => {
         try {
             await updateRule(ruleId, updates);
             setEditingRule(null);
@@ -50,7 +71,7 @@ export default function RulesPage() {
     };
 
     const handleDeleteRule = async (ruleId: string) => {
-        if (window.confirm('Are you sure you want to delete this rule?')) {
+        if (confirm('Are you sure you want to delete this rule?')) {
             try {
                 await deleteRule(ruleId);
             } catch (error) {
@@ -59,105 +80,234 @@ export default function RulesPage() {
         }
     };
 
-    if (loading && rules.length === 0) {
-        return <LoadingSpinner />;
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <LoadingSpinner />
+            </div>
+        );
     }
 
     if (error) {
-        return <ErrorMessage message={error.message} />;
+        return (
+            <div className="flex items-center justify-center h-64">
+                <div className="text-center">
+                    <p className="text-red-600">Error loading rules: {error.message}</p>
+                </div>
+            </div>
+        );
     }
 
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="bg-white shadow-sm rounded-lg p-6">
-                <div className="flex items-center justify-between">
-                    <h1 className="text-2xl font-semibold text-gray-900">Validation Rules</h1>
-                    <button
-                        onClick={() => setShowAddModal(true)}
-                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    >
-                        <Plus className="h-4 w-4 mr-2" />
-                        Create New Rule
-                    </button>
+            <div className="flex justify-between items-center">
+                <div>
+                    <h1 className="text-2xl font-bold text-gray-900">Reconciliation Rules</h1>
+                    <p className="mt-1 text-sm text-gray-500">
+                        Configure validation and reconciliation rules for vendors
+                    </p>
                 </div>
+                <button
+                    onClick={() => setShowAddModal(true)}
+                    className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                    <Plus className="h-5 w-5 mr-2" />
+                    Add Rule
+                </button>
             </div>
 
             {/* Filters */}
-            <div className="bg-white shadow-sm rounded-lg p-4">
-                <div className="flex items-center gap-4">
-                    <div className="relative flex-1 max-w-md">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                        <input
-                            type="text"
-                            placeholder="Search rules..."
-                            className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            value={filters.searchTerm}
-                            onChange={(e) => setFilters({ ...filters, searchTerm: e.target.value })}
-                        />
+            <Card className="p-3">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                    <div>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                            Search
+                        </label>
+                        <div className="relative">
+                            <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                            <input
+                                type="text"
+                                placeholder="Search rules..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="pl-8 pr-3 py-1.5 text-sm w-full border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                        </div>
                     </div>
 
-                    <select
-                        className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        value={filters.vendorCode}
-                        onChange={(e) => setFilters({ ...filters, vendorCode: e.target.value })}
-                    >
-                        <option value="">All Vendors</option>
-                        <option value="EXPEDIA">EXPEDIA</option>
-                        <option value="CTRIP">CTRIP</option>
-                        <option value="HOTELBEDS">HOTELBEDS</option>
-                        <option value="PKFARE">PKFARE</option>
-                        <option value="*">GLOBAL</option>
-                    </select>
+                    <div>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                            Vendor
+                        </label>
+                        <select
+                            value={selectedVendor}
+                            onChange={(e) => setSelectedVendor(e.target.value)}
+                            className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                            <option value="">All Vendors</option>
+                            {vendors.map(vendor => (
+                                <option key={vendor.id} value={vendor.id}>
+                                    {vendor.vendorName}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
 
-                    <select
-                        className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        value=""
-                        onChange={(e) => e.target.value && setFilters({ ...filters, ...JSON.parse(e.target.value) })}
-                    >
-                        <option value="">Sort by...</option>
-                        <option value='{"sortBy":"priority","sortOrder":"asc"}'>Priority (Low to High)</option>
-                        <option value='{"sortBy":"priority","sortOrder":"desc"}'>Priority (High to Low)</option>
-                        <option value='{"sortBy":"name","sortOrder":"asc"}'>Name (A-Z)</option>
-                        <option value='{"sortBy":"name","sortOrder":"desc"}'>Name (Z-A)</option>
-                        <option value='{"sortBy":"date","sortOrder":"desc"}'>Recently Modified</option>
-                    </select>
+                    <div>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                            Sort By
+                        </label>
+                        <select
+                            value={sortBy}
+                            onChange={(e) => setSortBy(e.target.value as 'priority' | 'name' | 'status')}
+                            className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                            <option value="priority">Priority</option>
+                            <option value="name">Name</option>
+                            <option value="status">Status</option>
+                        </select>
+                    </div>
+
+                    <div className="flex items-end">
+                        <button
+                            onClick={() => {
+                                setSearchTerm('');
+                                setSelectedVendor('');
+                                setSortBy('priority');
+                            }}
+                            className="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                        >
+                            Clear Filters
+                        </button>
+                    </div>
                 </div>
-            </div>
+            </Card>
 
             {/* Rules List */}
-            <RulesList
-                rules={rules}
-                onViewRule={setViewingRule}
-                onEditRule={(rule) => {
-                    setEditingRule(rule);
-                    setShowAddModal(true);
-                }}
-                onDeleteRule={handleDeleteRule}
-            />
+            <Card>
+                <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                        <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Rule Name
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Type
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Priority
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Status
+                            </th>
+                            <th className="relative px-6 py-3">
+                                <span className="sr-only">Actions</span>
+                            </th>
+                        </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                        {filteredAndSortedRules.length === 0 ? (
+                            <tr>
+                                <td colSpan={5} className="px-6 py-4 text-center text-sm text-gray-500">
+                                    No rules found
+                                </td>
+                            </tr>
+                        ) : (
+                            filteredAndSortedRules.map((rule) => (
+                                <tr key={rule.id} className="hover:bg-gray-50">
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div>
+                                            <div className="text-sm font-medium text-gray-900">
+                                                {rule.ruleName}
+                                            </div>
+                                            {rule.description && (
+                                                <div className="text-sm text-gray-500">
+                                                    {rule.description}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                            <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                                                {rule.ruleType}
+                                            </span>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="flex items-center">
+                                                <span className="text-sm font-medium text-gray-900">
+                                                    {rule.priority}
+                                                </span>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <button
+                                            onClick={() => toggleRuleStatus(rule.id!)}
+                                            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                                rule.isActive
+                                                    ? 'bg-green-100 text-green-800'
+                                                    : 'bg-gray-100 text-gray-800'
+                                            }`}
+                                        >
+                                            {rule.isActive ? 'Active' : 'Inactive'}
+                                        </button>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <button
+                                            onClick={() => setViewingRule(rule)}
+                                            className="text-blue-600 hover:text-blue-900 mr-3"
+                                        >
+                                            View
+                                        </button>
+                                        <button
+                                            onClick={() => setEditingRule(rule)}
+                                            className="text-indigo-600 hover:text-indigo-900 mr-3"
+                                        >
+                                            Edit
+                                        </button>
+                                        <button
+                                            onClick={() => handleDeleteRule(rule.id!)}
+                                            className="text-red-600 hover:text-red-900"
+                                        >
+                                            Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
+                        </tbody>
+                    </table>
+                </div>
+            </Card>
 
-            {/* Add/Edit Rule Modal */}
-            {(showAddModal || editingRule) && (
+            {/* Add Rule Modal */}
+            {showAddModal && (
                 <AddRuleModal
-                    isOpen={showAddModal || !!editingRule}
-                    onClose={() => {
-                        setShowAddModal(false);
-                        setEditingRule(null);
-                    }}
-                    onSave={editingRule ?
-                        (data: any) => handleUpdateRule(editingRule.id, data) :
-                        handleCreateRule
-                    }
-                    editingRule={editingRule}
+                    isOpen={showAddModal}
+                    onClose={() => setShowAddModal(false)}
+                    onSubmit={handleCreateRule}
+                    vendors={vendors}
+                />
+            )}
+
+            {/* Edit Rule Modal */}
+            {editingRule && (
+                <AddRuleModal
+                    isOpen={!!editingRule}
+                    onClose={() => setEditingRule(null)}
+                    onSubmit={(data) => handleUpdateRule(editingRule.id!, data)}
+                    initialData={editingRule}
+                    vendors={vendors}
                 />
             )}
 
             {/* View Rule Modal */}
             {viewingRule && (
                 <ViewRuleModal
-                    isOpen={true}
-                    rule={viewingRule}
+                    isOpen={!!viewingRule}
                     onClose={() => setViewingRule(null)}
+                    rule={viewingRule}
                 />
             )}
         </div>

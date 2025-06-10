@@ -1,5 +1,4 @@
 import { format, formatDistance, formatRelative, isValid } from 'date-fns';
-import { Timestamp } from 'firebase/firestore';
 
 // ==========================================
 // CURRENCY FORMATTING
@@ -82,16 +81,14 @@ export function formatCompactNumber(
 // ==========================================
 
 export function formatDate(
-    date: Date | Timestamp | string | null | undefined,
+    date: Date | string | null | undefined,
     formatString: string = 'MMM dd, yyyy'
 ): string {
     if (!date) return '-';
 
     let dateObj: Date;
 
-    if (date instanceof Timestamp) {
-        dateObj = date.toDate();
-    } else if (typeof date === 'string') {
+    if (typeof date === 'string') {
         dateObj = new Date(date);
     } else {
         dateObj = date;
@@ -103,22 +100,22 @@ export function formatDate(
 }
 
 export function formatDateTime(
-    date: Date | Timestamp | string | null | undefined,
+    date: Date | string | null | undefined,
     formatString: string = 'MMM dd, yyyy HH:mm'
 ): string {
     return formatDate(date, formatString);
 }
 
 export function formatTime(
-    date: Date | Timestamp | string | null | undefined,
+    date: Date | string | null | undefined,
     formatString: string = 'HH:mm:ss'
 ): string {
     return formatDate(date, formatString);
 }
 
 export function formatDateRange(
-    start: Date | Timestamp | string,
-    end: Date | Timestamp | string,
+    start: Date | string,
+    end: Date | string,
     formatString: string = 'MMM dd'
 ): string {
     const startStr = formatDate(start, formatString);
@@ -127,14 +124,12 @@ export function formatDateRange(
 }
 
 export function formatRelativeTime(
-    date: Date | Timestamp | string,
+    date: Date | string,
     baseDate: Date = new Date()
 ): string {
     let dateObj: Date;
 
-    if (date instanceof Timestamp) {
-        dateObj = date.toDate();
-    } else if (typeof date === 'string') {
+    if (typeof date === 'string') {
         dateObj = new Date(date);
     } else {
         dateObj = date;
@@ -144,14 +139,12 @@ export function formatRelativeTime(
 }
 
 export function formatRelativeDate(
-    date: Date | Timestamp | string,
+    date: Date | string,
     baseDate: Date = new Date()
 ): string {
     let dateObj: Date;
 
-    if (date instanceof Timestamp) {
-        dateObj = date.toDate();
-    } else if (typeof date === 'string') {
+    if (typeof date === 'string') {
         dateObj = new Date(date);
     } else {
         dateObj = date;

@@ -1,9 +1,7 @@
-import { Timestamp } from 'firebase/firestore';
 import { ValidationResult, ValidationEvidence } from './validation';
 
 // Re-export types
 export type { ValidationResult, ValidationEvidence } from './validation';
-export { Timestamp };
 
 // ==========================================
 // VENDOR MODEL
@@ -34,8 +32,8 @@ export interface Vendor {
 
     contract: {
         contractNumber: string;
-        startDate: Timestamp;
-        endDate: Timestamp;
+        startDate: Date;
+        endDate: Date;
         autoRenew: boolean;
         terms: string;
     };
@@ -56,16 +54,16 @@ export interface Vendor {
     statistics: {
         totalInvoices: number;
         totalAmount: number;
-        lastInvoiceDate: Timestamp;
+        lastInvoiceDate: Date;
         averageProcessingTime: number;
         disputeRate: number;
         validationPassRate: number;
     };
 
     metadata: {
-        createdAt: Timestamp;
+        createdAt: Date;
         createdBy: string;
-        lastModified: Timestamp;
+        lastModified: Date;
         modifiedBy: string;
         tags: string[];
     };
@@ -89,11 +87,11 @@ export interface Invoice {
     vendorName?: string; // Denormalized for display
     vendorInvoiceNumber: string;
 
-    invoiceDate: Timestamp;
-    periodStart: Timestamp;
-    periodEnd: Timestamp;
-    receivedDate: Timestamp;
-    dueDate: Timestamp;
+    invoiceDate: Date;
+    periodStart: Date;
+    periodEnd: Date;
+    receivedDate: Date;
+    dueDate: Date;
 
     financial: InvoiceFinancial;
     status: InvoiceStatus;
@@ -124,9 +122,9 @@ export interface InvoiceFinancial {
 export interface ProcessingStatus {
     stage: ProcessingStage;
     progress: number;
-    startTime: Timestamp;
-    lastUpdateTime: Timestamp;
-    estimatedCompletion?: Timestamp;
+    startTime: Date;
+    lastUpdateTime: Date;
+    estimatedCompletion?: Date;
 
     extraction: {
         status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'FAILED';
@@ -150,14 +148,14 @@ export interface FileReference {
     fileName: string;
     fileType: string;
     fileSize: number;
-    uploadedAt: Timestamp;
+    uploadedAt: Date;
     uploadedBy: string;
 }
 
 export interface ProcessedFile {
     type: 'EXTRACTED_JSON' | 'VALIDATION_REPORT' | 'RECONCILIATION_REPORT';
     gcsPath: string;
-    createdAt: Timestamp;
+    createdAt: Date;
 }
 
 export interface InvoiceSummary {
@@ -167,25 +165,25 @@ export interface InvoiceSummary {
     totalBookings: number;
     uniqueProperties: number;
     dateRange: {
-        earliest: Timestamp;
-        latest: Timestamp;
+        earliest: Date;
+        latest: Date;
     };
 }
 
 export interface AuditInfo {
-    createdAt: Timestamp;
+    createdAt: Date;
     createdBy: string;
-    lastModified: Timestamp;
+    lastModified: Date;
     modifiedBy: string;
-    approvedAt?: Timestamp;
+    approvedAt?: Date;
     approvedBy?: string;
-    rejectedAt?: Timestamp;
+    rejectedAt?: Date;
     rejectedBy?: string;
     history: AuditHistoryEntry[];
 }
 
 export interface AuditHistoryEntry {
-    timestamp: Timestamp;
+    timestamp: Date;
     userId: string;
     action: string;
     details?: any;
@@ -215,9 +213,9 @@ export interface LineItem {
 
     metadata: {
         lineNumber: number;
-        extractedAt: Timestamp;
-        validatedAt?: Timestamp;
-        lastModified: Timestamp;
+        extractedAt: Date;
+        validatedAt?: Date;
+        lastModified: Date;
         manuallyReviewed: boolean;
         reviewedBy?: string;
         reviewNotes?: string;
@@ -236,10 +234,10 @@ export interface BookingInfo {
     roomType: string;
     roomCount: number;
 
-    checkInDate: Timestamp;
-    checkOutDate: Timestamp;
-    bookingDate: Timestamp;
-    cancellationDate?: Timestamp;
+    checkInDate: Date;
+    checkOutDate: Date;
+    bookingDate: Date;
+    cancellationDate?: Date;
 
     status: 'CONFIRMED' | 'CANCELLED' | 'NO_SHOW' | 'MODIFIED';
 }
@@ -305,7 +303,7 @@ export interface ValidationIssue {
 export interface OMSData {
     found: boolean;
     reservationId?: string;
-    matchedAt?: Timestamp;
+    matchedAt?: Date;
     data?: {
         guestName: string;
         amount: number;
@@ -342,8 +340,8 @@ export interface ValidationRule {
         calculationBase?: 'GROSS' | 'NET' | 'ROOM_RATE';
     };
 
-    effectiveFrom: Timestamp;
-    effectiveTo?: Timestamp;
+    effectiveFrom: Date;
+    effectiveTo?: Date;
 
     conditions: RuleCondition[];
     actions: RuleActions;
@@ -353,14 +351,14 @@ export interface ValidationRule {
         passCount: number;
         failCount: number;
         averageExecutionTimeMs: number;
-        lastExecuted?: Timestamp;
+        lastExecuted?: Date;
         errorRate: number;
     };
 
     metadata: {
-        createdAt: Timestamp;
+        createdAt: Date;
         createdBy: string;
-        lastModified: Timestamp;
+        lastModified: Date;
         modifiedBy: string;
         tags: string[];
         documentation?: string;
@@ -484,11 +482,11 @@ export interface User {
     activity: UserActivity;
 
     metadata: {
-        createdAt: Timestamp;
+        createdAt: Date;
         createdBy?: string;
-        lastModified: Timestamp;
+        lastModified: Date;
         isActive: boolean;
-        deactivatedAt?: Timestamp;
+        deactivatedAt?: Date;
         deactivatedBy?: string;
         deactivationReason?: string;
     };
@@ -548,11 +546,11 @@ export interface UserPreferences {
 }
 
 export interface UserActivity {
-    lastLogin: Timestamp;
-    lastActivity: Timestamp;
+    lastLogin: Date;
+    lastActivity: Date;
     loginCount: number;
     recentActions: Array<{
-        timestamp: Timestamp;
+        timestamp: Date;
         action: string;
         resourceType: string;
         resourceId: string;

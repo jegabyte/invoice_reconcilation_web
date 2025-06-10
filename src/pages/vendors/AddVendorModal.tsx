@@ -1,50 +1,86 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal } from '@/components/common';
-
-interface VendorFormData {
-    vendorName: string;
-    vendorCode: string;
-    vendorType: string;
-    businessModelType: string;
-    commissionRate: string;
-    status: 'ACTIVE' | 'INACTIVE';
-}
+import { VendorConfiguration } from '@/types/firestore';
 
 interface AddVendorModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSubmit: (vendorData: any) => Promise<void>;
+    onSubmit: (vendorData: Omit<VendorConfiguration, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+    initialData?: VendorConfiguration;
 }
 
-export default function AddVendorModal({ isOpen, onClose, onSubmit }: AddVendorModalProps) {
-    const [formData, setFormData] = useState<VendorFormData>({
-        vendorName: '',
+export default function AddVendorModal({ isOpen, onClose, onSubmit, initialData }: AddVendorModalProps) {
+    const [formData, setFormData] = useState({
         vendorCode: '',
-        vendorType: '',
-        businessModelType: '',
-        commissionRate: '',
-        status: 'ACTIVE'
+        vendorName: '',
+        vendorType: 'OTA' as VendorConfiguration['vendorType'],
+        isActive: true,
+        businessModel: 'COMMISSION' as VendorConfiguration['businessModel'],
+        integrationSettings: {
+            apiEndpoint: '',
+            emailSettings: {
+                incomingEmail: '',
+                supportEmail: ''
+            }
+        },
+        invoiceSettings: {
+            defaultCurrency: 'USD',
+            invoicePrefix: '',
+            dueDays: 30,
+            paymentTerms: 'Net 30',
+            taxRate: 0
+        },
+        extractionSettings: {
+            dateFormat: 'MM/DD/YYYY',
+            numberFormat: 'en-US'
+        },
+        reconciliationSettings: {
+            autoReconcile: false,
+            matchingThreshold: 95,
+            defaultRules: [],
+            amountTolerancePercentage: 1
+        },
+        contacts: [{
+            name: '',
+            email: '',
+            phone: '',
+            role: 'Primary',
+            isPrimary: true
+        }]
     });
+
     const [submitting, setSubmitting] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
+
+    useEffect(() => {
+        if (initialData) {
+            setFormData({
+                vendorCode: initialData.vendorCode,
+                vendorName: initialData.vendorName,
+                vendorType: initialData.vendorType,
+                isActive: initialData.isActive,
+                businessModel: initialData.businessModel,
+                integrationSettings: initialData.integrationSettings,
+                invoiceSettings: initialData.invoiceSettings,
+                extractionSettings: initialData.extractionSettings,
+                reconciliationSettings: initialData.reconciliationSettings,
+                contacts: initialData.contacts
+            });
+        }
+    }, [initialData]);
 
     const validateForm = (): boolean => {
         const newErrors: Record<string, string> = {};
 
-        if (!formData.vendorName.trim()) newErrors.vendorName = 'Partner name is required';
-        if (!formData.vendorCode.trim()) newErrors.vendorCode = 'Partner code is required';
-        if (!formData.vendorType) newErrors.vendorType = 'Partner type is required';
-        if (!formData.businessModelType) newErrors.businessModelType = 'Business model is required';
+        if (!formData.vendorName.trim()) newErrors.vendorName = 'Required';
+        if (!formData.vendorCode.trim()) newErrors.vendorCode = 'Required';
 
-        if (formData.businessModelType === 'COMMISSION' && !formData.commissionRate) {
-            newErrors.commissionRate = 'Commission rate is required';
+        if (formData.contacts[0].name && !formData.contacts[0].email) {
+            newErrors.contactEmail = 'Email required';
         }
 
-        if (formData.commissionRate) {
-            const rate = parseFloat(formData.commissionRate);
-            if (isNaN(rate) || rate < 0 || rate > 100) {
-                newErrors.commissionRate = 'Commission rate must be between 0 and 100';
-            }
+        if (formData.contacts[0].email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.contacts[0].email)) {
+            newErrors.contactEmail = 'Invalid email';
         }
 
         setErrors(newErrors);
@@ -58,45 +94,35 @@ export default function AddVendorModal({ isOpen, onClose, onSubmit }: AddVendorM
 
         setSubmitting(true);
         try {
-            const vendorData = {
-                vendorName: formData.vendorName.trim(),
-                vendorCode: formData.vendorCode.trim(),
-                vendorType: formData.vendorType,
-                status: formData.status,
-                businessModel: {
-                    type: formData.businessModelType,
-                    commissionRate: formData.businessModelType === 'COMMISSION'
-                        ? parseFloat(formData.commissionRate)
-                        : null
-                }
+            const vendorData: Omit<VendorConfiguration, 'id' | 'createdAt' | 'updatedAt'> = {
+                ...formData,
+                contacts: formData.contacts.filter(c => c.name && c.email)
             };
 
             await onSubmit(vendorData);
-            handleClose();
+            onClose();
         } catch (error) {
-            console.error('Error creating partner:', error);
-            // Handle error (you might want to show an error message to the user)
+            console.error('Error submitting vendor:', error);
         } finally {
             setSubmitting(false);
         }
     };
 
-    const handleClose = () => {
-        setFormData({
-            vendorName: '',
-            vendorCode: '',
-            vendorType: '',
-            businessModelType: '',
-            commissionRate: '',
-            status: 'ACTIVE'
+    const handleChange = (field: string, value: any) => {
+        setFormData(prev => {
+            if (field.includes('.')) {
+                const [parent, child] = field.split('.');
+                return {
+                    ...prev,
+                    [parent]: {
+                        ...(prev as any)[parent],
+                        [child]: value
+                    }
+                };
+            }
+            return { ...prev, [field]: value };
         });
-        setErrors({});
-        onClose();
-    };
 
-    const handleInputChange = (field: keyof VendorFormData, value: string) => {
-        setFormData(prev => ({ ...prev, [field]: value }));
-        // Clear error when user starts typing
         if (errors[field]) {
             setErrors(prev => ({ ...prev, [field]: '' }));
         }
@@ -105,158 +131,197 @@ export default function AddVendorModal({ isOpen, onClose, onSubmit }: AddVendorM
     return (
         <Modal
             isOpen={isOpen}
-            onClose={handleClose}
-            title="Add New Partner"
-            size="sm"
+            onClose={onClose}
+            title={initialData ? 'Edit Vendor' : 'Add New Vendor'}
+            size="md"
         >
-            <form onSubmit={handleSubmit} className="space-y-3">
-                {/* Partner Name */}
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Partner Name <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                        type="text"
-                        value={formData.vendorName}
-                        onChange={(e) => handleInputChange('vendorName', e.target.value)}
-                        className={`w-full px-2.5 py-1.5 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                            errors.vendorName ? 'border-red-300' : 'border-gray-300'
-                        }`}
-                        placeholder="Enter partner name"
-                    />
-                    {errors.vendorName && (
-                        <p className="mt-1 text-xs text-red-600">{errors.vendorName}</p>
-                    )}
-                </div>
+            <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Basic Information */}
+                <div className="space-y-3">
+                    <h3 className="text-sm font-semibold text-gray-900 pb-2 border-b">Basic Information</h3>
 
-                {/* Partner Code */}
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Partner Code <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                        type="text"
-                        value={formData.vendorCode}
-                        onChange={(e) => handleInputChange('vendorCode', e.target.value.toUpperCase())}
-                        className={`w-full px-2.5 py-1.5 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                            errors.vendorCode ? 'border-red-300' : 'border-gray-300'
-                        }`}
-                        placeholder="e.g., PARTNER001"
-                    />
-                    {errors.vendorCode && (
-                        <p className="mt-1 text-xs text-red-600">{errors.vendorCode}</p>
-                    )}
-                </div>
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">
+                                Vendor Code *
+                            </label>
+                            <input
+                                type="text"
+                                value={formData.vendorCode}
+                                onChange={(e) => handleChange('vendorCode', e.target.value)}
+                                className={`block w-full text-sm rounded-md shadow-sm ${
+                                    errors.vendorCode ? 'border-red-300' : 'border-gray-300'
+                                } focus:border-blue-500 focus:ring-blue-500`}
+                                placeholder="VEN001"
+                            />
+                            {errors.vendorCode && (
+                                <p className="mt-0.5 text-xs text-red-600">{errors.vendorCode}</p>
+                            )}
+                        </div>
 
-                {/* Partner Type */}
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Partner Type <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                        value={formData.vendorType}
-                        onChange={(e) => handleInputChange('vendorType', e.target.value)}
-                        className={`w-full px-2.5 py-1.5 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                            errors.vendorType ? 'border-red-300' : 'border-gray-300'
-                        }`}
-                    >
-                        <option value="">Select partner type</option>
-                        <option value="OTA">OTA (Online Travel Agency)</option>
-                        <option value="DIRECT">Direct Partner</option>
-                        <option value="CHANNEL_MANAGER">Channel Manager</option>
-                        <option value="WHOLESALER">Wholesaler</option>
-                    </select>
-                    {errors.vendorType && (
-                        <p className="mt-1 text-xs text-red-600">{errors.vendorType}</p>
-                    )}
-                </div>
-
-                {/* Business Model */}
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Business Model <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                        value={formData.businessModelType}
-                        onChange={(e) => handleInputChange('businessModelType', e.target.value)}
-                        className={`w-full px-2.5 py-1.5 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                            errors.businessModelType ? 'border-red-300' : 'border-gray-300'
-                        }`}
-                    >
-                        <option value="">Select business model</option>
-                        <option value="COMMISSION">Commission Based</option>
-                        <option value="NET_RATE">Net Rate</option>
-                        <option value="MERCHANT">Merchant Model</option>
-                    </select>
-                    {errors.businessModelType && (
-                        <p className="mt-1 text-xs text-red-600">{errors.businessModelType}</p>
-                    )}
-                </div>
-
-                {/* Commission Rate (conditional) */}
-                {formData.businessModelType === 'COMMISSION' && (
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Commission Rate (%) <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                            type="number"
-                            value={formData.commissionRate}
-                            onChange={(e) => handleInputChange('commissionRate', e.target.value)}
-                            className={`w-full px-2.5 py-1.5 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                                errors.commissionRate ? 'border-red-300' : 'border-gray-300'
-                            }`}
-                            placeholder="e.g., 15"
-                            min="0"
-                            max="100"
-                            step="0.01"
-                        />
-                        {errors.commissionRate && (
-                            <p className="mt-1 text-xs text-red-600">{errors.commissionRate}</p>
-                        )}
+                        <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">
+                                Vendor Name *
+                            </label>
+                            <input
+                                type="text"
+                                value={formData.vendorName}
+                                onChange={(e) => handleChange('vendorName', e.target.value)}
+                                className={`block w-full text-sm rounded-md shadow-sm ${
+                                    errors.vendorName ? 'border-red-300' : 'border-gray-300'
+                                } focus:border-blue-500 focus:ring-blue-500`}
+                                placeholder="Example Vendor"
+                            />
+                            {errors.vendorName && (
+                                <p className="mt-0.5 text-xs text-red-600">{errors.vendorName}</p>
+                            )}
+                        </div>
                     </div>
-                )}
 
-                {/* Status */}
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Status
-                    </label>
-                    <select
-                        value={formData.status}
-                        onChange={(e) => handleInputChange('status', e.target.value as 'ACTIVE' | 'INACTIVE')}
-                        className="w-full px-2.5 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                        <option value="ACTIVE">Active</option>
-                        <option value="INACTIVE">Inactive</option>
-                    </select>
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">
+                                Vendor Type *
+                            </label>
+                            <select
+                                value={formData.vendorType}
+                                onChange={(e) => handleChange('vendorType', e.target.value)}
+                                className="block w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                            >
+                                <option value="OTA">OTA</option>
+                                <option value="DIRECT">Direct</option>
+                                <option value="CHANNEL_MANAGER">Channel Manager</option>
+                                <option value="GDS">GDS</option>
+                                <option value="OTHER">Other</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">
+                                Business Model *
+                            </label>
+                            <select
+                                value={formData.businessModel}
+                                onChange={(e) => handleChange('businessModel', e.target.value)}
+                                className="block w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                            >
+                                <option value="NET_RATE">Net Rate</option>
+                                <option value="COMMISSION">Commission</option>
+                                <option value="SELL_RATE">Sell Rate</option>
+                                <option value="PROFIT_SHARING">Profit Sharing</option>
+                                <option value="MIXED">Mixed</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="flex items-center text-sm">
+                            <input
+                                type="checkbox"
+                                checked={formData.isActive}
+                                onChange={(e) => handleChange('isActive', e.target.checked)}
+                                className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 mr-2"
+                            />
+                            <span className="text-gray-700">Active</span>
+                        </label>
+                    </div>
                 </div>
 
-                {/* Actions */}
-                <div className="flex justify-end space-x-2 pt-3">
+                {/* Invoice Settings */}
+                <div className="space-y-3">
+                    <h3 className="text-sm font-semibold text-gray-900 pb-2 border-b">Invoice Settings</h3>
+
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">
+                                Default Currency
+                            </label>
+                            <input
+                                type="text"
+                                value={formData.invoiceSettings.defaultCurrency}
+                                onChange={(e) => handleChange('invoiceSettings.defaultCurrency', e.target.value)}
+                                className="block w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                placeholder="USD"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">
+                                Payment Terms (Days)
+                            </label>
+                            <input
+                                type="number"
+                                value={formData.invoiceSettings.dueDays}
+                                onChange={(e) => handleChange('invoiceSettings.dueDays', parseInt(e.target.value))}
+                                className="block w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                placeholder="30"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Contact Information */}
+                <div className="space-y-3">
+                    <h3 className="text-sm font-semibold text-gray-900 pb-2 border-b">Primary Contact</h3>
+
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">
+                                Contact Name
+                            </label>
+                            <input
+                                type="text"
+                                value={formData.contacts[0].name}
+                                onChange={(e) => {
+                                    const newContacts = [...formData.contacts];
+                                    newContacts[0].name = e.target.value;
+                                    setFormData(prev => ({ ...prev, contacts: newContacts }));
+                                }}
+                                className="block w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                placeholder="John Doe"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">
+                                Contact Email
+                            </label>
+                            <input
+                                type="email"
+                                value={formData.contacts[0].email}
+                                onChange={(e) => {
+                                    const newContacts = [...formData.contacts];
+                                    newContacts[0].email = e.target.value;
+                                    setFormData(prev => ({ ...prev, contacts: newContacts }));
+                                }}
+                                className={`block w-full text-sm rounded-md shadow-sm ${
+                                    errors.contactEmail ? 'border-red-300' : 'border-gray-300'
+                                } focus:border-blue-500 focus:ring-blue-500`}
+                                placeholder="john@example.com"
+                            />
+                            {errors.contactEmail && (
+                                <p className="mt-0.5 text-xs text-red-600">{errors.contactEmail}</p>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Form Actions */}
+                <div className="flex justify-end space-x-2 pt-3 border-t">
                     <button
                         type="button"
-                        onClick={handleClose}
-                        className="px-3 py-1.5 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        onClick={onClose}
+                        className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        disabled={submitting}
                     >
                         Cancel
                     </button>
                     <button
                         type="submit"
+                        className="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={submitting}
-                        className="px-3 py-1.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        {submitting ? (
-                            <span className="flex items-center">
-                                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                                Creating...
-                            </span>
-                        ) : (
-                            'Create Partner'
-                        )}
+                        {submitting ? 'Saving...' : (initialData ? 'Update' : 'Create')} Vendor
                     </button>
                 </div>
             </form>

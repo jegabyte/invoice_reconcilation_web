@@ -1,14 +1,12 @@
 import { useState } from 'react';
 import { Save, Bell, Shield, Database } from 'lucide-react';
 import { Card } from '@/components/common';
-import { useAuth } from '@/hooks/useAuth';
 
 export default function SettingsPage() {
-    const { user } = useAuth();
     const [activeTab, setActiveTab] = useState('general');
     const [settings, setSettings] = useState({
-        displayName: user?.displayName || '',
-        email: user?.email || '',
+        displayName: 'System Administrator',
+        email: 'admin@invoicereconciliation.com',
         notifications: {
             emailEnabled: true,
             inAppEnabled: true,
