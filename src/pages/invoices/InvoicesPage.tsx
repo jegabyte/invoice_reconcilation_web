@@ -5,6 +5,7 @@ import { useInvoices } from '@/hooks/useInvoices';
 import { useVendors } from '@/hooks/useVendors';
 import { LoadingSpinner, Card } from '@/components/common';
 import { formatCurrency, formatDate } from '@/utils/formatters';
+import { APP_CONFIG } from '@/config/app.config';
 import AddInvoiceModal from './AddInvoiceModal';
 
 export default function InvoicesPage() {
@@ -147,11 +148,11 @@ export default function InvoicesPage() {
                         onChange={(e) => setSelectedStatus(e.target.value)}
                         className="px-2 py-1 bg-white border border-gray-200 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                     >
-                        <option value="">All Status</option>
-                        <option value="PENDING">Pending</option>
-                        <option value="COMPLETED">Completed</option>
-                        <option value="FAILED">Failed</option>
-                        <option value="REVIEW_REQUIRED">Review Required</option>
+                        {APP_CONFIG.filterOptions.invoice.status.map(option => (
+                            <option key={option.value} value={option.value}>
+                                {option.label}
+                            </option>
+                        ))}
                     </select>
 
                     {/* Date Range */}

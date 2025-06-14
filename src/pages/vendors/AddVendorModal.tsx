@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal } from '@/components/common';
 import { VendorConfiguration } from '@/types/api.types';
+import { APP_CONFIG } from '@/config/app.config';
 
 interface AddVendorModalProps {
     isOpen: boolean;
@@ -230,11 +231,13 @@ export default function AddVendorModal({ isOpen, onClose, onSubmit, initialData 
                                 onChange={(e) => handleChange('vendorType', e.target.value)}
                                 className="block w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                             >
-                                <option value="OTA">OTA</option>
-                                <option value="DIRECT">Direct</option>
-                                <option value="CHANNEL_MANAGER">Channel Manager</option>
-                                <option value="GDS">GDS</option>
-                                <option value="OTHER">Other</option>
+                                {APP_CONFIG.filterOptions.vendor.type
+                                    .filter(option => option.value !== '') // Remove "All Types" option
+                                    .map(option => (
+                                        <option key={option.value} value={option.value}>
+                                            {option.label}
+                                        </option>
+                                    ))}
                             </select>
                         </div>
 

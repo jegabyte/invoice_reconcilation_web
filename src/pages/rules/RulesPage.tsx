@@ -6,6 +6,7 @@ import AddRuleModal from '@/components/rules/AddRuleModal';
 import ViewRuleModal from '@/components/rules/ViewRuleModal';
 import { LoadingSpinner, Card } from '@/components/common';
 import { ReconciliationRule } from '@/types/api.types';
+import { APP_CONFIG } from '@/config/app.config';
 
 export default function RulesPage() {
     const [showAddModal, setShowAddModal] = useState(false);
@@ -155,9 +156,11 @@ export default function RulesPage() {
                         onChange={(e) => setSortBy(e.target.value as 'priority' | 'name' | 'status')}
                         className="px-2 py-1 bg-white border border-gray-200 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none min-w-[120px]"
                     >
-                        <option value="priority">Sort: Priority</option>
-                        <option value="name">Sort: Name</option>
-                        <option value="status">Sort: Status</option>
+                        {APP_CONFIG.filterOptions.rule.sortBy.map(option => (
+                            <option key={option.value} value={option.value}>
+                                {option.label}
+                            </option>
+                        ))}
                     </select>
 
                     {/* Clear */}

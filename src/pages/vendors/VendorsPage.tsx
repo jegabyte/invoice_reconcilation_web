@@ -3,6 +3,7 @@ import { Plus, Search, Filter } from 'lucide-react';
 import { Card, LoadingSpinner } from '@/components/common';
 import { VendorConfiguration } from '@/types/api.types';
 import { ApiDataService } from '@/services/api.data.service';
+import { APP_CONFIG } from '@/config/app.config';
 import AddVendorModal from './AddVendorModal';
 import ViewVendorModal from './ViewVendorModal';
 
@@ -145,12 +146,11 @@ export default function VendorsPage() {
                         onChange={(e) => setFilterType(e.target.value)}
                         className="px-2 py-1 bg-white border border-gray-200 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none min-w-[100px]"
                     >
-                        <option value="">All Types</option>
-                        <option value="OTA">OTA</option>
-                        <option value="DIRECT">Direct</option>
-                        <option value="CHANNEL_MANAGER">Channel Manager</option>
-                        <option value="GDS">GDS</option>
-                        <option value="OTHER">Other</option>
+                        {APP_CONFIG.filterOptions.vendor.type.map(option => (
+                            <option key={option.value} value={option.value}>
+                                {option.label}
+                            </option>
+                        ))}
                     </select>
 
                     {/* Status */}
@@ -159,9 +159,11 @@ export default function VendorsPage() {
                         onChange={(e) => setFilterStatus(e.target.value as any)}
                         className="px-2 py-1 bg-white border border-gray-200 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none min-w-[100px]"
                     >
-                        <option value="ALL">All Status</option>
-                        <option value="ACTIVE">Active</option>
-                        <option value="INACTIVE">Inactive</option>
+                        {APP_CONFIG.filterOptions.vendor.status.map(option => (
+                            <option key={option.value} value={option.value}>
+                                {option.label}
+                            </option>
+                        ))}
                     </select>
 
                     {/* Sort */}
@@ -170,10 +172,11 @@ export default function VendorsPage() {
                         onChange={(e) => setSortBy(e.target.value as 'name' | 'code' | 'type' | 'status')}
                         className="px-2 py-1 bg-white border border-gray-200 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none min-w-[100px]"
                     >
-                        <option value="name">Sort: Name</option>
-                        <option value="code">Sort: Code</option>
-                        <option value="type">Sort: Type</option>
-                        <option value="status">Sort: Status</option>
+                        {APP_CONFIG.filterOptions.vendor.sortBy.map(option => (
+                            <option key={option.value} value={option.value}>
+                                {option.label}
+                            </option>
+                        ))}
                     </select>
 
                     {/* Clear */}

@@ -32,15 +32,16 @@ The application has been architected to work with a backend API. Currently, it u
 src/
 ├── components/        # Feature-based UI components
 │   ├── auth/         # Authentication components
-│   ├── common/       # Shared components
+│   ├── common/       # Shared components (Button, Card, Modal, etc.)
 │   ├── invoices/     # Invoice-related components
-│   ├── layout/       # Layout components
+│   ├── layout/       # Layout components (AppLayout, Sidebar, etc.)
 │   ├── rules/        # Rule management components
 │   └── vendors/      # Vendor components
 ├── config/           # Configuration files
-│   ├── app.config.ts # Application configuration
-│   ├── constants.ts  # App constants (including currency)
-│   └── environment.ts # Environment settings
+│   ├── app.config.ts # Central application configuration
+│   ├── constants.ts  # App constants
+│   ├── environment.ts # Environment settings
+│   └── firebase.ts   # Firebase configuration
 ├── hooks/            # Custom React hooks
 │   ├── useAuth.ts    # Authentication hook
 │   ├── useFirestore.ts # Firestore operations
@@ -50,23 +51,33 @@ src/
 │   └── useVendors.ts   # Vendor operations
 ├── pages/            # Page components
 │   ├── auth/         # Login, Register, Forgot Password
-│   ├── invoices/     # Invoice pages
+│   ├── invoices/     # Invoice pages (list, detail, modals)
+│   │   ├── InvoicesPage.tsx
+│   │   ├── InvoiceDetailPage.tsx
+│   │   ├── AddInvoiceModal.tsx
+│   │   └── InvoiceDetailsModal.tsx
 │   ├── rules/        # Rules page
+│   │   └── RulesPage.tsx
 │   ├── settings/     # Settings page
+│   │   └── SettingsPage.tsx
 │   └── vendors/      # Vendors page
+│       ├── VendorsPage.tsx
+│       ├── AddVendorModal.tsx
+│       └── ViewVendorModal.tsx
 ├── services/         # Service layer
 │   ├── api/          # API service implementations
 │   │   ├── client.ts # Axios HTTP client
 │   │   ├── config.ts # API configuration
-│   │   ├── mock-data.ts # Comprehensive mock data
 │   │   ├── vendor.api.service.ts
 │   │   ├── extraction.api.service.ts
 │   │   ├── reconciliation.api.service.ts
 │   │   ├── rules.api.service.ts
 │   │   └── statistics.api.service.ts
-│   ├── factory/      # Service factory pattern
-│   └── interfaces/   # Service interfaces
+│   ├── api.data.service.ts # Unified data service
+│   ├── auth.service.ts     # Authentication service
+│   └── firebase.backup/    # Firebase backup (deprecated)
 ├── store/            # Redux store
+│   ├── index.ts      # Store configuration
 │   └── slices/       # Redux slices
 │       ├── auth.slice.ts
 │       ├── invoice.slice.ts
@@ -74,6 +85,8 @@ src/
 │       └── vendor.slice.ts
 ├── types/            # TypeScript definitions
 │   ├── api.types.ts  # API data types
+│   ├── firestore.ts  # Firestore types
+│   ├── jspdf-autotable.d.ts # PDF types
 │   └── models/       # Domain models
 └── utils/            # Utility functions
     ├── formatters.ts # Currency, date formatting
@@ -82,7 +95,14 @@ src/
 
 ## API Integration
 
-The application is designed to work with a backend API. Currently, it uses mock data for development purposes.
+The application is integrated with REST APIs hosted on Firebase Functions. The base URL is configurable through environment variables.
+
+### Current API Endpoints
+
+- **Base URL**: `https://us-central1-ava-staging-4a9e1.cloudfunctions.net/invoice-api-stub`
+- **Rules**: `/rules`
+- **Vendors**: `/vendors`  
+- **Invoice Summaries**: `/invoice_summaries`
 
 ### Current Mock Implementation
 
@@ -306,6 +326,204 @@ Files that need updating for full multi-currency support:
 - `src/pages/invoices/InvoiceDetailPage.tsx` - All currency displays
 - `src/components/invoices/LineItemDetail.tsx` - Line item amounts
 - Any other component displaying monetary values
+
+## UI Customization Guide
+
+### Central Configuration
+
+All UI configurations are centralized in `src/config/app.config.ts`. This file contains settings for:
+
+#### 1. Table Configuration
+```typescript
+tables: {
+  fontSize: 'text-xs',           // Change to 'text-sm' for larger text
+  headerPadding: 'px-2 py-1.5',  // Adjust padding as needed
+  cellPadding: 'px-2 py-1.5',    // Adjust cell spacing
+  compactMode: true,             // Set to false for spacious layout
+  stripedRows: true,             // Alternating row colors
+  hoverEffect: 'hover:bg-gray-50'
+}
+```
+
+#### 2. Filter Component Styling
+```typescript
+filters: {
+  backgroundColor: 'bg-gray-50',  // Change filter section background
+  borderColor: 'border-gray-200', // Change border color
+  inputSize: 'text-xs',          // Input text size
+  inputPadding: 'px-2 py-1',     // Input padding
+  minWidths: {
+    search: 'min-w-[150px] max-w-[200px]',
+    select: 'min-w-[100px]',
+    selectLarge: 'min-w-[120px]'
+  }
+}
+```
+
+#### 3. Card/Metric Components
+```typescript
+cards: {
+  padding: {
+    compact: 'p-3',    // For metric cards
+    normal: 'p-4',     // Standard cards
+    large: 'p-6'       // Detail cards
+  },
+  shadow: 'shadow-sm',
+  borderRadius: 'rounded-lg'
+}
+```
+
+#### 4. Status Colors
+```typescript
+statusColors: {
+  active: 'bg-green-100 text-green-800',
+  inactive: 'bg-gray-100 text-gray-800',
+  pending: 'bg-blue-100 text-blue-800',
+  completed: 'bg-green-100 text-green-800',
+  failed: 'bg-red-100 text-red-800',
+  review: 'bg-yellow-100 text-yellow-800'
+}
+```
+
+### Making UI Changes
+
+#### To Change Table Font Size Globally:
+1. Open `src/config/app.config.ts`
+2. Change `tables.fontSize` from `'text-xs'` to `'text-sm'` or `'text-base'`
+3. All tables will automatically update
+
+#### To Change Filter Appearance:
+1. Modify `filters.backgroundColor` for different background
+2. Adjust `filters.inputSize` for larger/smaller inputs
+3. Change `filters.minWidths` to control dropdown sizes
+
+#### To Adjust Card Spacing:
+1. Update `cards.padding` values
+2. For tighter layout: change `compact: 'p-2'`
+3. For spacious layout: change `normal: 'p-6'`
+
+#### To Modify Status Badge Colors:
+1. Update color classes in `statusColors`
+2. Use Tailwind color classes (e.g., 'bg-purple-100 text-purple-800')
+
+#### To Modify Filter Options:
+All dropdown filter options are centralized in `filterOptions`:
+
+1. **Invoice Status Options**:
+   ```typescript
+   filterOptions.invoice.status: [
+     { value: '', label: 'All Status' },
+     { value: 'PENDING', label: 'Pending' },
+     // Add or modify status options
+   ]
+   ```
+
+2. **Vendor Type Options**:
+   ```typescript
+   filterOptions.vendor.type: [
+     { value: 'OTA', label: 'OTA' },
+     { value: 'DIRECT', label: 'Direct' },
+     // Add or modify vendor types
+   ]
+   ```
+
+3. **Sort Options**:
+   - Vendor sort: `filterOptions.vendor.sortBy`
+   - Rule sort: `filterOptions.rule.sortBy`
+
+To add a new filter option:
+```typescript
+// In app.config.ts
+filterOptions.vendor.type.push({ value: 'NEW_TYPE', label: 'New Type' })
+```
+
+### Component-Specific Customization
+
+#### Invoice Page Metrics:
+- Location: `src/pages/invoices/InvoicesPage.tsx`
+- Line 193-249: Metric cards layout
+- Change grid: `grid-cols-2 md:grid-cols-5` to adjust layout
+
+#### Table Columns:
+- Rules: `src/pages/rules/RulesPage.tsx` (line 194-221)
+- Invoices: `src/pages/invoices/InvoicesPage.tsx` (line 257-275)
+- Vendors: `src/pages/vendors/VendorsPage.tsx` (line 215-233)
+
+#### Icons:
+- Invoice metrics: Lines 200, 210, 220, 230, 246
+- Import new icons from 'lucide-react' as needed
+
+### Quick Style Changes
+
+1. **Make tables less compact**:
+   ```typescript
+   // In app.config.ts
+   tables: {
+     fontSize: 'text-sm',
+     headerPadding: 'px-4 py-3',
+     cellPadding: 'px-4 py-3'
+   }
+   ```
+
+2. **Change primary color scheme**:
+   ```typescript
+   // In app.config.ts
+   buttons: {
+     primary: 'bg-indigo-600 hover:bg-indigo-700 text-white'
+   }
+   ```
+
+3. **Make filters more prominent**:
+   ```typescript
+   // In app.config.ts
+   filters: {
+     backgroundColor: 'bg-white',
+     borderColor: 'border-gray-300',
+     inputSize: 'text-sm'
+   }
+   ```
+
+## Recent Updates
+
+### API Integration (Latest)
+- Replaced all Firestore/dummy implementations with REST API calls
+- Integrated with Firebase Functions endpoints
+- API responses are mapped to existing TypeScript interfaces
+- Create/Update/Delete operations show success messages without actual API calls (as requested)
+
+### UI Improvements (Latest)
+1. **Compact Table Design**
+   - Reduced font sizes from `text-sm` to `text-xs`
+   - Reduced padding for headers and cells
+   - Added responsive column hiding for smaller screens
+   - Improved date formatting (e.g., "Jan 15, 24")
+
+2. **Sleek Filter Components**
+   - Replaced Card wrapper with lightweight gray background
+   - Added filter icon for better visual identification
+   - Reduced input sizes and removed labels
+   - Smart clear button that only shows when filters are active
+
+3. **Enhanced Metric Cards**
+   - Reduced size with `p-3` padding instead of `p-4`
+   - Better icons: CheckCircle for processed, Clock for pending
+   - 5-column layout for better space utilization
+
+4. **Invoice Detail Page**
+   - Restructured to show only essential components
+   - Added PDF download functionality with jsPDF
+   - New Reconciliation Outcome component
+   - Updated Line Items with API data fields
+
+5. **Vendor Management**
+   - Fixed matchingThreshold conversion (decimal to percentage)
+   - Proper handling of vendor editing
+   - Consistent table design across all pages
+
+### Dependencies Added
+- `jspdf`: ^3.0.1 - PDF generation
+- `jspdf-autotable`: ^5.0.2 - Table support for PDFs
+- `@types/jspdf`: ^1.3.3 - TypeScript definitions
 
 ## Development Setup
 
