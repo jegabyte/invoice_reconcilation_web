@@ -1,37 +1,30 @@
 import { useState, useEffect } from 'react';
-import { Plus, Search, Edit2, Trash2, Building2, Globe, Link } from 'lucide-react';
-import { Card, LoadingSpinner, StatusBadge } from '@/components/common';
+import { Plus, Search } from 'lucide-react';
+import { Card, LoadingSpinner } from '@/components/common';
 import { VendorConfiguration } from '@/types/api.types';
-import { DataService } from '@/services/data.service';
-import { formatDate } from '@/utils/formatters';
+import { ApiDataService } from '@/services/api.data.service';
 import AddVendorModal from './AddVendorModal';
+import ViewVendorModal from './ViewVendorModal';
 
 export default function VendorsPage() {
     const [vendors, setVendors] = useState<VendorConfiguration[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState<'ALL' | 'ACTIVE' | 'INACTIVE'>('ALL');
+    const [filterType, setFilterType] = useState<string>('');
+    const [sortBy, setSortBy] = useState<'name' | 'code' | 'type' | 'status'>('name');
     const [showAddModal, setShowAddModal] = useState(false);
     const [editingVendor, setEditingVendor] = useState<VendorConfiguration | null>(null);
+    const [viewingVendor, setViewingVendor] = useState<VendorConfiguration | null>(null);
 
     useEffect(() => {
         loadVendors();
-        
-        // Subscribe to real-time updates
-        const unsubscribe = DataService.subscribeToVendors(
-            (updatedVendors) => {
-                setVendors(updatedVendors);
-            },
-            { isActive: filterStatus === 'ALL' ? undefined : filterStatus === 'ACTIVE' }
-        );
-
-        return () => unsubscribe();
     }, [filterStatus]);
 
     const loadVendors = async () => {
         try {
             setLoading(true);
-            const vendorsList = await DataService.getVendors({
+            const vendorsList = await ApiDataService.getVendors({
                 isActive: filterStatus === 'ALL' ? undefined : filterStatus === 'ACTIVE'
             });
             setVendors(vendorsList);
@@ -42,17 +35,37 @@ export default function VendorsPage() {
         }
     };
 
-    const filteredVendors = vendors.filter(vendor => {
-        const matchesSearch = vendor.vendorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            vendor.vendorCode.toLowerCase().includes(searchTerm.toLowerCase());
-        return matchesSearch;
-    });
+    const filteredAndSortedVendors = vendors
+        .filter(vendor => {
+            const matchesSearch = searchTerm === '' ||
+                vendor.vendorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                vendor.vendorCode.toLowerCase().includes(searchTerm.toLowerCase());
+            
+            const matchesType = filterType === '' || vendor.vendorType === filterType;
+            
+            return matchesSearch && matchesType;
+        })
+        .sort((a, b) => {
+            switch (sortBy) {
+                case 'name':
+                    return a.vendorName.localeCompare(b.vendorName);
+                case 'code':
+                    return a.vendorCode.localeCompare(b.vendorCode);
+                case 'type':
+                    return a.vendorType.localeCompare(b.vendorType);
+                case 'status':
+                    return (b.isActive ? 1 : 0) - (a.isActive ? 1 : 0);
+                default:
+                    return 0;
+            }
+        });
 
     const handleDeleteVendor = async (vendor: VendorConfiguration) => {
         if (confirm(`Are you sure you want to delete ${vendor.vendorName}? This action cannot be undone.`)) {
             try {
                 if (vendor.id) {
-                    await DataService.deleteVendor(vendor.id);
+                    await ApiDataService.deleteVendor(vendor.id);
+                    await loadVendors();
                 }
             } catch (error) {
                 console.error('Error deleting vendor:', error);
@@ -62,8 +75,9 @@ export default function VendorsPage() {
 
     const handleCreateVendor = async (vendorData: Omit<VendorConfiguration, 'id' | 'createdAt' | 'updatedAt'>) => {
         try {
-            await DataService.createVendor(vendorData);
+            await ApiDataService.createVendor(vendorData);
             setShowAddModal(false);
+            await loadVendors();
         } catch (error) {
             console.error('Error creating vendor:', error);
             throw error;
@@ -72,8 +86,9 @@ export default function VendorsPage() {
 
     const handleUpdateVendor = async (id: string, updates: Partial<VendorConfiguration>) => {
         try {
-            await DataService.updateVendor(id, updates);
+            await ApiDataService.updateVendor(id, updates);
             setEditingVendor(null);
+            await loadVendors();
         } catch (error) {
             console.error('Error updating vendor:', error);
             throw error;
@@ -93,9 +108,9 @@ export default function VendorsPage() {
             {/* Header */}
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Vendor Configurations</h1>
+                    <h1 className="text-2xl font-bold text-gray-900">Vendors</h1>
                     <p className="mt-1 text-sm text-gray-500">
-                        Manage vendor settings and integration configurations
+                        Manage vendor settings and configurations
                     </p>
                 </div>
                 <button
@@ -108,147 +123,209 @@ export default function VendorsPage() {
             </div>
 
             {/* Filters */}
-            <Card className="p-4">
-                <div className="flex flex-col sm:flex-row gap-4">
-                    <div className="flex-1">
+            <Card className="p-3">
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+                    <div>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                            Search
+                        </label>
                         <div className="relative">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                            <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                             <input
                                 type="text"
                                 placeholder="Search vendors..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="pl-8 pr-3 py-1.5 text-sm w-full border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
                         </div>
                     </div>
-                    <div className="flex gap-2">
+
+                    <div>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                            Type
+                        </label>
+                        <select
+                            value={filterType}
+                            onChange={(e) => setFilterType(e.target.value)}
+                            className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                            <option value="">All Types</option>
+                            <option value="OTA">OTA</option>
+                            <option value="DIRECT">Direct</option>
+                            <option value="CHANNEL_MANAGER">Channel Manager</option>
+                            <option value="GDS">GDS</option>
+                            <option value="OTHER">Other</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                            Status
+                        </label>
                         <select
                             value={filterStatus}
                             onChange={(e) => setFilterStatus(e.target.value as any)}
-                            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         >
                             <option value="ALL">All Status</option>
                             <option value="ACTIVE">Active</option>
                             <option value="INACTIVE">Inactive</option>
                         </select>
                     </div>
+
+                    <div>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                            Sort By
+                        </label>
+                        <select
+                            value={sortBy}
+                            onChange={(e) => setSortBy(e.target.value as 'name' | 'code' | 'type' | 'status')}
+                            className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                            <option value="name">Name</option>
+                            <option value="code">Code</option>
+                            <option value="type">Type</option>
+                            <option value="status">Status</option>
+                        </select>
+                    </div>
+
+                    <div className="flex items-end">
+                        <button
+                            onClick={() => {
+                                setSearchTerm('');
+                                setFilterType('');
+                                setFilterStatus('ALL');
+                                setSortBy('name');
+                            }}
+                            className="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                        >
+                            Clear Filters
+                        </button>
+                    </div>
                 </div>
             </Card>
 
-            {/* Vendors List */}
-            <div className="grid gap-4">
-                {filteredVendors.length === 0 ? (
-                    <Card className="p-8 text-center">
-                        <Building2 className="mx-auto h-12 w-12 text-gray-400" />
-                        <h3 className="mt-2 text-sm font-medium text-gray-900">No vendors found</h3>
-                        <p className="mt-1 text-sm text-gray-500">
-                            Get started by adding your first vendor configuration.
-                        </p>
-                    </Card>
-                ) : (
-                    filteredVendors.map((vendor) => (
-                        <Card key={vendor.id} className="p-6">
-                            <div className="flex items-start justify-between">
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-4">
-                                        <h3 className="text-lg font-semibold text-gray-900">
+            {/* Vendors Table */}
+            <Card>
+                <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200 text-xs">
+                        <thead className="bg-gray-50">
+                        <tr>
+                            <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Name
+                            </th>
+                            <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Code
+                            </th>
+                            <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Type
+                            </th>
+                            <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">
+                                Model
+                            </th>
+                            <th className="px-2 py-1.5 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Status
+                            </th>
+                            <th className="px-2 py-1.5 text-right text-xs font-medium text-gray-500 uppercase">
+                                Actions
+                            </th>
+                        </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                        {filteredAndSortedVendors.length === 0 ? (
+                            <tr>
+                                <td colSpan={6} className="px-6 py-4 text-center text-xs text-gray-500">
+                                    No vendors found
+                                </td>
+                            </tr>
+                        ) : (
+                            filteredAndSortedVendors.map((vendor) => (
+                                <tr key={vendor.id} className="hover:bg-gray-50">
+                                    <td className="px-2 py-1.5 whitespace-nowrap">
+                                        <div className="text-xs font-medium text-gray-900 truncate max-w-[200px]" title={vendor.vendorName}>
                                             {vendor.vendorName}
-                                        </h3>
-                                        <StatusBadge
-                                            status={vendor.isActive ? 'ACTIVE' : 'INACTIVE'}
-                                        />
-                                    </div>
-                                    <p className="mt-1 text-sm text-gray-500">
-                                        Code: {vendor.vendorCode} • Type: {vendor.vendorType}
-                                    </p>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <button
-                                        onClick={() => setEditingVendor(vendor)}
-                                        className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                    >
-                                        <Edit2 className="h-5 w-5" />
-                                    </button>
-                                    <button
-                                        onClick={() => handleDeleteVendor(vendor)}
-                                        className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                    >
-                                        <Trash2 className="h-5 w-5" />
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-700">Business Model</p>
-                                    <p className="mt-1 text-sm text-gray-900">{vendor.businessModel}</p>
-                                </div>
-                                <div>
-                                    <p className="text-sm font-medium text-gray-700">Integration</p>
-                                    <div className="mt-1 flex items-center gap-2">
-                                        {vendor.integrationSettings.apiEndpoint && (
-                                            <Globe className="h-4 w-4 text-gray-400" />
-                                        )}
-                                        {vendor.integrationSettings.ftpDetails && (
-                                            <Link className="h-4 w-4 text-gray-400" />
-                                        )}
-                                        <span className="text-sm text-gray-900">
-                                            {vendor.integrationSettings.apiEndpoint ? 'API' : 
-                                             vendor.integrationSettings.ftpDetails ? 'FTP' : 
-                                             'Email'}
+                                        </div>
+                                    </td>
+                                    <td className="px-2 py-1.5 whitespace-nowrap">
+                                        <span className="text-xs text-gray-900">{vendor.vendorCode}</span>
+                                    </td>
+                                    <td className="px-2 py-1.5 whitespace-nowrap">
+                                        <span className="inline-flex px-1.5 py-0.5 text-xs font-medium rounded bg-blue-100 text-blue-800">
+                                            {vendor.vendorType}
                                         </span>
-                                    </div>
-                                </div>
-                                <div>
-                                    <p className="text-sm font-medium text-gray-700">Invoice Settings</p>
-                                    <p className="mt-1 text-sm text-gray-900">
-                                        {vendor.invoiceSettings.defaultCurrency} • 
-                                        {vendor.invoiceSettings.dueDays} days
-                                    </p>
-                                </div>
-                            </div>
-
-                            {vendor.contacts.length > 0 && (
-                                <div className="mt-4 pt-4 border-t border-gray-200">
-                                    <p className="text-sm font-medium text-gray-700">Primary Contact</p>
-                                    {vendor.contacts
-                                        .filter(c => c.isPrimary)
-                                        .map(contact => (
-                                            <p key={contact.email} className="mt-1 text-sm text-gray-900">
-                                                {contact.name} • {contact.email}
-                                            </p>
-                                        ))}
-                                </div>
-                            )}
-
-                            <div className="mt-4 pt-4 border-t border-gray-200 flex items-center justify-between text-xs text-gray-500">
-                                <span>Created: {formatDate(new Date(vendor.createdAt))}</span>
-                                <span>Updated: {formatDate(new Date(vendor.updatedAt))}</span>
-                            </div>
-                        </Card>
-                    ))
-                )}
-            </div>
+                                    </td>
+                                    <td className="px-2 py-1.5 whitespace-nowrap hidden md:table-cell">
+                                        <span className="text-xs text-gray-600">
+                                            {vendor.businessModel}
+                                        </span>
+                                    </td>
+                                    <td className="px-2 py-1.5 whitespace-nowrap text-center">
+                                        <span className={`inline-flex px-1.5 py-0.5 text-xs font-medium rounded ${
+                                            vendor.isActive
+                                                ? 'bg-green-100 text-green-800'
+                                                : 'bg-gray-100 text-gray-800'
+                                        }`}>
+                                            {vendor.isActive ? 'Active' : 'Inactive'}
+                                        </span>
+                                    </td>
+                                    <td className="px-2 py-1.5 whitespace-nowrap text-right">
+                                        <div className="flex items-center justify-end space-x-1">
+                                            <button
+                                                onClick={() => setViewingVendor(vendor)}
+                                                className="text-xs text-blue-600 hover:text-blue-900 px-1"
+                                            >
+                                                View
+                                            </button>
+                                            <span className="text-gray-300">|</span>
+                                            <button
+                                                onClick={() => setEditingVendor(vendor)}
+                                                className="text-xs text-indigo-600 hover:text-indigo-900 px-1"
+                                            >
+                                                Edit
+                                            </button>
+                                            <span className="text-gray-300">|</span>
+                                            <button
+                                                onClick={() => handleDeleteVendor(vendor)}
+                                                className="text-xs text-red-600 hover:text-red-900 px-1"
+                                            >
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
+                        </tbody>
+                    </table>
+                </div>
+            </Card>
 
             {/* Add Vendor Modal */}
-            {showAddModal && (
-                <AddVendorModal
-                    isOpen={showAddModal}
-                    onClose={() => setShowAddModal(false)}
-                    onSubmit={handleCreateVendor}
-                />
-            )}
+            <AddVendorModal
+                isOpen={showAddModal}
+                onClose={() => setShowAddModal(false)}
+                onSubmit={handleCreateVendor}
+            />
 
             {/* Edit Vendor Modal */}
-            {editingVendor && (
-                <AddVendorModal
-                    isOpen={!!editingVendor}
-                    onClose={() => setEditingVendor(null)}
-                    onSubmit={(data) => handleUpdateVendor(editingVendor.id!, data)}
-                    initialData={editingVendor}
-                />
-            )}
+            <AddVendorModal
+                isOpen={!!editingVendor}
+                onClose={() => setEditingVendor(null)}
+                onSubmit={async (data) => {
+                    if (editingVendor?.id) {
+                        await handleUpdateVendor(editingVendor.id, data);
+                    }
+                }}
+                initialData={editingVendor || undefined}
+            />
+
+            {/* View Vendor Modal */}
+            <ViewVendorModal
+                isOpen={!!viewingVendor}
+                onClose={() => setViewingVendor(null)}
+                vendor={viewingVendor}
+            />
         </div>
     );
 }

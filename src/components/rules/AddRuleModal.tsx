@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Modal } from '@/components/common';
-import { ValidationRule, RuleCondition } from '@/types/models';
+import { ReconciliationRule, RuleCondition } from '@/types/api.types';
 import { Plus, Trash2, ChevronDown, ChevronUp, Info } from 'lucide-react';
 import { ConditionForm } from './ConditionForm';
 
 interface AddRuleModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSave: (rule: Partial<ValidationRule>) => void;
-    editingRule?: ValidationRule | null;
+    onSave: (rule: Partial<ReconciliationRule>) => void;
+    editingRule?: ReconciliationRule | null;
 }
 
 export default function AddRuleModal({ isOpen, onClose, onSave, editingRule }: AddRuleModalProps) {

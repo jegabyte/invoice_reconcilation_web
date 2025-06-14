@@ -177,11 +177,8 @@ export class ApiDataService {
         }
     }
     
-    static async createReconciliationRule(rule: Omit<ReconciliationRule, 'id' | 'createdAt' | 'updatedAt' | 'usageCount'>): Promise<string> {
-        const response = await rulesApiService.createRule({
-            ...rule,
-            lastUsed: null
-        });
+    static async createReconciliationRule(rule: Omit<ReconciliationRule, 'id' | 'createdAt' | 'updatedAt' | 'lastUsed' | 'usageCount'>): Promise<string> {
+        const response = await rulesApiService.createRule(rule);
         return response.data.id!;
     }
     
@@ -197,7 +194,7 @@ export class ApiDataService {
     // RECONCILIATION STATUS
     // ==========================================
     
-    static async getReconciliationStatuses(filters?: {
+    static async getReconciliationStatuses(_filters?: {
         vendorId?: string;
         currentStage?: string;
         overallStatus?: string;
@@ -219,7 +216,7 @@ export class ApiDataService {
         }
     }
     
-    static async createReconciliationStatus(status: Omit<ReconciliationStatus, 'id' | 'lastUpdated'>): Promise<string> {
+    static async createReconciliationStatus(_status: Omit<ReconciliationStatus, 'id' | 'lastUpdated'>): Promise<string> {
         // This would need to be implemented in the API service
         return `status_${Date.now()}`;
     }
@@ -275,5 +272,21 @@ export class ApiDataService {
     static async getStatistics() {
         const response = await statisticsApiService.getStatistics();
         return response.data;
+    }
+    
+    // ==========================================
+    // LINE ITEMS
+    // ==========================================
+    
+    static async getLineItems(_invoiceId: string): Promise<any[]> {
+        // This would need to be implemented with a specific endpoint
+        // For now, return empty array
+        return [];
+    }
+    
+    static async getLineItemValidationResults(_lineItemId: string): Promise<any[]> {
+        // This would need to be implemented with a specific endpoint
+        // For now, return empty array
+        return [];
     }
 }

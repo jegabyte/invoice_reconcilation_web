@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Download, CheckCircle, FileText, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Download } from 'lucide-react';
 import { Card, LoadingSpinner } from '@/components/common';
 import { ApiDataService } from '@/services/api.data.service';
 import { formatCurrency, formatDate } from '@/utils/formatters';
 import { ExtractionResult, InvoiceReconciliationSummary, ReconciliationStatus } from '@/types/api.types';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 export default function InvoiceDetailPage() {
     const { id } = useParams<{ id: string }>();
@@ -70,6 +72,89 @@ export default function InvoiceDetailPage() {
         );
     }
 
+    // Determine processing status
+    const getProcessingStatus = () => {
+        if (!status) return 'Processing';
+        if (status.currentStage === 'EXTRACTING') return 'Extraction in progress';
+        if (status.currentStage === 'RECONCILING') return 'Invoice reconciliation in progress';
+        if (status.currentStage === 'COMPLETED') return 'Processing completed';
+        if (status.currentStage === 'FAILED') return 'Processing failed';
+        return status.currentStage;
+    };
+
+    // Get reconciliation outcome
+    const getReconciliationOutcome = () => {
+        if (!summary) return 'Pending';
+        if (summary.status === 'MATCHED' && summary.variance === 0) return 'Complete Match';
+        if (summary.status === 'DISPUTED' || summary.status === 'MISMATCHED') return 'Disputed';
+        return summary.status;
+    };
+
+    // Get invoice recommendation
+    const getInvoiceRecommendation = () => {
+        if (!extraction.extractedData.headerInfo.recommendation) return 'No recommendation available';
+        return extraction.extractedData.headerInfo.recommendation;
+    };
+
+    // Download PDF functionality
+    const handleDownloadPDF = () => {
+        try {
+            if (!extraction) {
+                console.error('No extraction data available');
+                return;
+            }
+            
+            const doc = new jsPDF();
+        
+        // Header
+        doc.setFontSize(20);
+        doc.text(`Invoice #${extraction.invoiceNumber}`, 20, 20);
+        doc.setFontSize(12);
+        doc.text(extraction.vendorName, 20, 30);
+        
+        // Invoice Information
+        doc.setFontSize(14);
+        doc.text('Invoice Information', 20, 45);
+        doc.setFontSize(10);
+        doc.text(`Invoice Number: ${extraction.invoiceNumber}`, 20, 55);
+        doc.text(`Invoice Date: ${formatDate(new Date(extraction.invoiceDate))}`, 20, 62);
+        doc.text(`Due Date: ${extraction.dueDate ? formatDate(new Date(extraction.dueDate)) : 'N/A'}`, 20, 69);
+        doc.text(`Currency: ${extraction.currency}`, 20, 76);
+        doc.text(`Total Amount: ${formatCurrency(extraction.totalAmount)}`, 20, 83);
+        doc.text(`Processing Status: ${getProcessingStatus()}`, 20, 90);
+        
+        // Reconciliation Outcome
+        doc.setFontSize(14);
+        doc.text('Reconciliation Outcome', 20, 105);
+        doc.setFontSize(10);
+        doc.text(`Outcome: ${getReconciliationOutcome()}`, 20, 115);
+        doc.text(`Recommendation: ${getInvoiceRecommendation()}`, 20, 122);
+        
+        // Line Items Table
+        const lineItemsData = extraction.extractedData.lineItems.map(item => [
+            item.bookingReference || '-',
+            formatCurrency(item.amount),
+            item.metadata?.status || '-',
+            item.metadata?.dispute_type || '-',
+            item.metadata?.warnings_count || '0'
+        ]);
+        
+        autoTable(doc, {
+            startY: 135,
+            head: [['Booking ID', 'Invoice Amount', 'Status', 'Dispute Type', 'Warnings']],
+            body: lineItemsData,
+            theme: 'striped',
+            headStyles: { fillColor: [66, 139, 202] }
+        });
+        
+        // Save the PDF
+        doc.save(`invoice_${extraction.invoiceNumber}.pdf`);
+        } catch (error) {
+            console.error('Error generating PDF:', error);
+            alert('Failed to generate PDF. Please check the console for details.');
+        }
+    };
+
     return (
         <div className="space-y-6">
             {/* Header */}
@@ -93,6 +178,7 @@ export default function InvoiceDetailPage() {
                 
                 <div className="flex items-center space-x-3">
                     <button
+                        onClick={handleDownloadPDF}
                         className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
                     >
                         <Download className="h-4 w-4 mr-2" />
@@ -101,54 +187,11 @@ export default function InvoiceDetailPage() {
                 </div>
             </div>
 
-            {/* Status Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card className="p-4">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm font-medium text-gray-600">Extraction Status</p>
-                            <p className="mt-1 text-lg font-semibold">{extraction.status}</p>
-                        </div>
-                        <FileText className="h-8 w-8 text-gray-400" />
-                    </div>
-                </Card>
-                
-                <Card className="p-4">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm font-medium text-gray-600">Confidence Score</p>
-                            <p className="mt-1 text-lg font-semibold">
-                                {(extraction.confidence * 100).toFixed(1)}%
-                            </p>
-                        </div>
-                        <div className={`h-8 w-8 ${
-                            extraction.confidence >= 0.8 ? 'text-green-500' :
-                            extraction.confidence >= 0.6 ? 'text-yellow-500' :
-                            'text-red-500'
-                        }`}>
-                            {extraction.confidence >= 0.8 ? <CheckCircle /> : <AlertCircle />}
-                        </div>
-                    </div>
-                </Card>
-                
-                <Card className="p-4">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm font-medium text-gray-600">Total Amount</p>
-                            <p className="mt-1 text-lg font-semibold">
-                                {formatCurrency(extraction.totalAmount)}
-                            </p>
-                        </div>
-                        <span className="text-2xl">💰</span>
-                    </div>
-                </Card>
-            </div>
-
-            {/* Invoice Details */}
+            {/* Invoice Information */}
             <Card>
                 <div className="p-6">
                     <h2 className="text-lg font-medium text-gray-900 mb-4">Invoice Information</h2>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                         <div>
                             <p className="text-sm font-medium text-gray-500">Invoice Number</p>
                             <p className="mt-1 text-sm text-gray-900">{extraction.invoiceNumber}</p>
@@ -172,13 +215,50 @@ export default function InvoiceDetailPage() {
                             <p className="mt-1 text-sm text-gray-900">{extraction.currency}</p>
                         </div>
                         <div>
-                            <p className="text-sm font-medium text-gray-500">Extraction Method</p>
-                            <p className="mt-1 text-sm text-gray-900">{extraction.extractionMethod}</p>
+                            <p className="text-sm font-medium text-gray-500">Total Amount</p>
+                            <p className="mt-1 text-sm font-semibold text-gray-900">
+                                {formatCurrency(extraction.totalAmount)}
+                            </p>
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium text-gray-500">Processing Status</p>
+                            <p className="mt-1 text-sm text-gray-900">
+                                {getProcessingStatus()}
+                            </p>
                         </div>
                         <div>
                             <p className="text-sm font-medium text-gray-500">Created At</p>
                             <p className="mt-1 text-sm text-gray-900">
                                 {formatDate(new Date(extraction.createdAt))}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </Card>
+
+            {/* Reconciliation Outcome */}
+            <Card>
+                <div className="p-6">
+                    <h2 className="text-lg font-medium text-gray-900 mb-4">Reconciliation Outcome</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <p className="text-sm font-medium text-gray-500">Recon Outcome</p>
+                            <p className="mt-1">
+                                <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${
+                                    getReconciliationOutcome() === 'Complete Match' 
+                                        ? 'bg-green-100 text-green-800' 
+                                        : getReconciliationOutcome() === 'Disputed'
+                                        ? 'bg-red-100 text-red-800'
+                                        : 'bg-yellow-100 text-yellow-800'
+                                }`}>
+                                    {getReconciliationOutcome()}
+                                </span>
+                            </p>
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium text-gray-500">Invoice Recommendation</p>
+                            <p className="mt-1 text-sm text-gray-900">
+                                {getInvoiceRecommendation()}
                             </p>
                         </div>
                     </div>
@@ -194,28 +274,19 @@ export default function InvoiceDetailPage() {
                             <thead className="bg-gray-50">
                                 <tr>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        #
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Description
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Guest Name
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Check In
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Check Out
+                                        Booking ID
                                     </th>
                                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Quantity
+                                        Invoice Amount
                                     </th>
-                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Unit Price
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Status
                                     </th>
-                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Amount
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Dispute Type
+                                    </th>
+                                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Warnings Count
                                     </th>
                                 </tr>
                             </thead>
@@ -223,152 +294,52 @@ export default function InvoiceDetailPage() {
                                 {extraction.extractedData.lineItems.map((item, index) => (
                                     <tr key={index}>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {item.lineNumber}
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-gray-900">
-                                            {item.description}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {item.guestName || '-'}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {item.checkInDate ? formatDate(new Date(item.checkInDate)) : '-'}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {item.checkOutDate ? formatDate(new Date(item.checkOutDate)) : '-'}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
-                                            {item.quantity}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
-                                            {formatCurrency(item.unitPrice)}
+                                            {item.bookingReference || '-'}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-right">
                                             {formatCurrency(item.amount)}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                                item.metadata?.status === 'MATCHED' 
+                                                    ? 'bg-green-100 text-green-800'
+                                                    : item.metadata?.status === 'DISPUTED'
+                                                    ? 'bg-red-100 text-red-800'
+                                                    : 'bg-gray-100 text-gray-800'
+                                            }`}>
+                                                {item.metadata?.status || 'PENDING'}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            {item.metadata?.dispute_type || '-'}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                                (item.metadata?.warnings_count || 0) > 0
+                                                    ? 'bg-yellow-100 text-yellow-800'
+                                                    : 'bg-gray-100 text-gray-800'
+                                            }`}>
+                                                {item.metadata?.warnings_count || 0}
+                                            </span>
                                         </td>
                                     </tr>
                                 ))}
                             </tbody>
                             <tfoot className="bg-gray-50">
                                 <tr>
-                                    <td colSpan={7} className="px-6 py-4 text-sm font-medium text-gray-900 text-right">
+                                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
                                         Total
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 text-right">
                                         {formatCurrency(extraction.totalAmount)}
                                     </td>
+                                    <td colSpan={3}></td>
                                 </tr>
                             </tfoot>
                         </table>
                     </div>
                 </div>
             </Card>
-
-            {/* Reconciliation Summary */}
-            {summary && (
-                <Card>
-                    <div className="p-6">
-                        <h2 className="text-lg font-medium text-gray-900 mb-4">Reconciliation Summary</h2>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <div>
-                                <p className="text-sm font-medium text-gray-500">Status</p>
-                                <p className="mt-1 text-sm font-semibold text-gray-900">{summary.status}</p>
-                            </div>
-                            <div>
-                                <p className="text-sm font-medium text-gray-500">Variance</p>
-                                <p className="mt-1 text-sm font-semibold text-gray-900">
-                                    {formatCurrency(summary.variance)} ({summary.variancePercentage.toFixed(2)}%)
-                                </p>
-                            </div>
-                            <div>
-                                <p className="text-sm font-medium text-gray-500">Matched Items</p>
-                                <p className="mt-1 text-sm font-semibold text-gray-900">
-                                    {summary.matchedLineItems} / {summary.totalLineItems}
-                                </p>
-                            </div>
-                            <div>
-                                <p className="text-sm font-medium text-gray-500">Approval Status</p>
-                                <p className="mt-1 text-sm font-semibold text-gray-900">
-                                    {summary.approvalStatus || 'Pending'}
-                                </p>
-                            </div>
-                        </div>
-
-                        {summary.issues.length > 0 && (
-                            <div className="mt-4">
-                                <h3 className="text-sm font-medium text-gray-900 mb-2">Issues Found</h3>
-                                <div className="space-y-2">
-                                    {summary.issues.map((issue, index) => (
-                                        <div key={index} className={`p-3 rounded-lg ${
-                                            issue.severity === 'HIGH' ? 'bg-red-50' :
-                                            issue.severity === 'MEDIUM' ? 'bg-yellow-50' :
-                                            'bg-blue-50'
-                                        }`}>
-                                            <p className="text-sm font-medium">{issue.type}</p>
-                                            <p className="text-sm text-gray-600">{issue.description}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </Card>
-            )}
-
-            {/* Processing Status */}
-            {status && (
-                <Card>
-                    <div className="p-6">
-                        <h2 className="text-lg font-medium text-gray-900 mb-4">Processing Status</h2>
-                        <div className="space-y-4">
-                            <div>
-                                <div className="flex items-center justify-between mb-2">
-                                    <span className="text-sm font-medium text-gray-700">Extraction</span>
-                                    <span className="text-sm text-gray-500">
-                                        {status.progress.extraction.percentage}%
-                                    </span>
-                                </div>
-                                <div className="w-full bg-gray-200 rounded-full h-2">
-                                    <div
-                                        className="bg-blue-600 h-2 rounded-full"
-                                        style={{ width: `${status.progress.extraction.percentage}%` }}
-                                    />
-                                </div>
-                            </div>
-
-                            <div>
-                                <div className="flex items-center justify-between mb-2">
-                                    <span className="text-sm font-medium text-gray-700">Validation</span>
-                                    <span className="text-sm text-gray-500">
-                                        {status.progress.validation.percentage}%
-                                    </span>
-                                </div>
-                                <div className="w-full bg-gray-200 rounded-full h-2">
-                                    <div
-                                        className="bg-blue-600 h-2 rounded-full"
-                                        style={{ width: `${status.progress.validation.percentage}%` }}
-                                    />
-                                </div>
-                            </div>
-
-                            <div>
-                                <div className="flex items-center justify-between mb-2">
-                                    <span className="text-sm font-medium text-gray-700">Reconciliation</span>
-                                    <span className="text-sm text-gray-500">
-                                        {status.progress.reconciliation.percentage}%
-                                    </span>
-                                </div>
-                                <div className="w-full bg-gray-200 rounded-full h-2">
-                                    <div
-                                        className="bg-blue-600 h-2 rounded-full"
-                                        style={{ width: `${status.progress.reconciliation.percentage}%` }}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </Card>
-            )}
         </div>
     );
 }

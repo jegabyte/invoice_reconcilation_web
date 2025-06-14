@@ -1,5 +1,3 @@
-import { apiClient } from './client';
-import { API_ENDPOINTS } from './config';
 import { mockStatistics } from './mock-data';
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));

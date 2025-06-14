@@ -5,6 +5,7 @@ class ApiClient {
   private client: AxiosInstance;
 
   constructor() {
+    console.log('API_CONFIG.baseURL:', API_CONFIG.baseURL);
     this.client = axios.create({
       baseURL: API_CONFIG.baseURL,
       timeout: API_CONFIG.timeout,
@@ -14,6 +15,8 @@ class ApiClient {
     // Request interceptor
     this.client.interceptors.request.use(
       (config) => {
+        console.log('Request URL:', config.baseURL, config.url);
+        console.log('Full URL:', (config.baseURL || '') + (config.url || ''));
         // Add auth token if available
         const token = localStorage.getItem('authToken');
         if (token) {
@@ -41,11 +44,15 @@ class ApiClient {
             details: errorData?.error?.details || {},
           };
         } else if (error.request) {
-          // Request made but no response
+          // Request made but no response - likely CORS issue
+          console.error('Network error - likely CORS issue:', error);
           throw {
             code: 'NETWORK_ERROR',
-            message: 'Unable to connect to server',
-            details: {},
+            message: 'Unable to connect to server. This may be a CORS issue with the Firebase Functions.',
+            details: {
+              hint: 'The Firebase Functions need to have CORS enabled, or you can use a proxy for development.',
+              originalError: error.message
+            },
           };
         } else {
           // Something else happened

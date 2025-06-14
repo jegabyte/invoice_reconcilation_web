@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Search, Filter } from 'lucide-react';
+import { Plus, Search } from 'lucide-react';
 import { useRules } from '@/hooks/useRules';
 import { useVendors } from '@/hooks/useVendors';
 import AddRuleModal from '@/components/rules/AddRuleModal';
@@ -47,12 +47,13 @@ export default function RulesPage() {
             }
         });
 
-    const handleCreateRule = async (ruleData: Omit<ReconciliationRule, 'id' | 'createdAt' | 'updatedAt' | 'usageCount' | 'lastUsed'>) => {
+    const handleCreateRule = async (ruleData: Partial<ReconciliationRule>) => {
         try {
             await createRule({
                 ...ruleData,
-                description: ruleData.description || ''
-            });
+                description: ruleData.description || '',
+                lastUsed: null
+            } as Omit<ReconciliationRule, 'id' | 'createdAt' | 'updatedAt' | 'usageCount'>);
             setShowAddModal(false);
         } catch (error) {
             console.error('Error creating rule:', error);
@@ -187,64 +188,87 @@ export default function RulesPage() {
             {/* Rules List */}
             <Card>
                 <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
+                    <table className="min-w-full divide-y divide-gray-200 text-xs">
                         <thead className="bg-gray-50">
                         <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Rule Name
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Vendor
+                            </th>
+                            <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Type
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">
+                                Entity
+                            </th>
+                            <th className="px-2 py-1.5 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Priority
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">
+                                From
+                            </th>
+                            <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">
+                                To
+                            </th>
+                            <th className="px-2 py-1.5 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Status
                             </th>
-                            <th className="relative px-6 py-3">
-                                <span className="sr-only">Actions</span>
+                            <th className="px-2 py-1.5 text-right text-xs font-medium text-gray-500 uppercase">
+                                Actions
                             </th>
                         </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
                         {filteredAndSortedRules.length === 0 ? (
                             <tr>
-                                <td colSpan={5} className="px-6 py-4 text-center text-sm text-gray-500">
+                                <td colSpan={9} className="px-6 py-4 text-center text-sm text-gray-500">
                                     No rules found
                                 </td>
                             </tr>
                         ) : (
                             filteredAndSortedRules.map((rule) => (
                                 <tr key={rule.id} className="hover:bg-gray-50">
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div>
-                                            <div className="text-sm font-medium text-gray-900">
-                                                {rule.ruleName}
-                                            </div>
-                                            {rule.description && (
-                                                <div className="text-sm text-gray-500">
-                                                    {rule.description}
-                                                </div>
-                                            )}
+                                    <td className="px-2 py-1.5">
+                                        <div className="text-xs font-medium text-gray-900">
+                                            {rule.ruleName}
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                                                {rule.ruleType}
-                                            </span>
+                                    <td className="px-2 py-1.5 whitespace-nowrap">
+                                        <span className="text-xs text-gray-900">
+                                            {(rule as any).vendorCode || rule.vendorId || 'GLOBAL'}
+                                        </span>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="flex items-center">
-                                                <span className="text-sm font-medium text-gray-900">
-                                                    {rule.priority}
-                                                </span>
-                                        </div>
+                                    <td className="px-2 py-1.5 whitespace-nowrap">
+                                        <span className="inline-flex px-1.5 py-0.5 text-xs font-medium rounded bg-blue-100 text-blue-800">
+                                            {(rule as any).apiRuleType || rule.ruleType}
+                                        </span>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
+                                    <td className="px-2 py-1.5 whitespace-nowrap hidden md:table-cell">
+                                        <span className="text-xs text-gray-600">
+                                            {(rule as any).entityType || 'N/A'}
+                                        </span>
+                                    </td>
+                                    <td className="px-2 py-1.5 whitespace-nowrap text-center">
+                                        <span className="text-xs font-medium text-gray-900">
+                                            {rule.priority}
+                                        </span>
+                                    </td>
+                                    <td className="px-2 py-1.5 whitespace-nowrap hidden lg:table-cell">
+                                        <span className="text-xs text-gray-600">
+                                            {rule.effectiveFrom ? new Date(rule.effectiveFrom).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' }) : 'N/A'}
+                                        </span>
+                                    </td>
+                                    <td className="px-2 py-1.5 whitespace-nowrap hidden lg:table-cell">
+                                        <span className="text-xs text-gray-600">
+                                            {rule.effectiveTo ? new Date(rule.effectiveTo).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' }) : 'None'}
+                                        </span>
+                                    </td>
+                                    <td className="px-2 py-1.5 whitespace-nowrap text-center">
                                         <button
                                             onClick={() => toggleRuleStatus(rule.id!)}
-                                            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                            className={`inline-flex px-1.5 py-0.5 text-xs font-medium rounded ${
                                                 rule.isActive
                                                     ? 'bg-green-100 text-green-800'
                                                     : 'bg-gray-100 text-gray-800'
@@ -253,25 +277,29 @@ export default function RulesPage() {
                                             {rule.isActive ? 'Active' : 'Inactive'}
                                         </button>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <button
-                                            onClick={() => setViewingRule(rule)}
-                                            className="text-blue-600 hover:text-blue-900 mr-3"
-                                        >
-                                            View
-                                        </button>
-                                        <button
-                                            onClick={() => setEditingRule(rule)}
-                                            className="text-indigo-600 hover:text-indigo-900 mr-3"
-                                        >
-                                            Edit
-                                        </button>
-                                        <button
-                                            onClick={() => handleDeleteRule(rule.id!)}
-                                            className="text-red-600 hover:text-red-900"
-                                        >
-                                            Delete
-                                        </button>
+                                    <td className="px-2 py-1.5 whitespace-nowrap text-right">
+                                        <div className="flex items-center justify-end space-x-1">
+                                            <button
+                                                onClick={() => setViewingRule(rule)}
+                                                className="text-xs text-blue-600 hover:text-blue-900 px-1"
+                                            >
+                                                View
+                                            </button>
+                                            <span className="text-gray-300">|</span>
+                                            <button
+                                                onClick={() => setEditingRule(rule)}
+                                                className="text-xs text-indigo-600 hover:text-indigo-900 px-1"
+                                            >
+                                                Edit
+                                            </button>
+                                            <span className="text-gray-300">|</span>
+                                            <button
+                                                onClick={() => handleDeleteRule(rule.id!)}
+                                                className="text-xs text-red-600 hover:text-red-900 px-1"
+                                            >
+                                                Delete
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))
@@ -286,8 +314,7 @@ export default function RulesPage() {
                 <AddRuleModal
                     isOpen={showAddModal}
                     onClose={() => setShowAddModal(false)}
-                    onSubmit={handleCreateRule}
-                    vendors={vendors}
+                    onSave={handleCreateRule}
                 />
             )}
 
@@ -296,9 +323,8 @@ export default function RulesPage() {
                 <AddRuleModal
                     isOpen={!!editingRule}
                     onClose={() => setEditingRule(null)}
-                    onSubmit={(data) => handleUpdateRule(editingRule.id!, data)}
-                    initialData={editingRule}
-                    vendors={vendors}
+                    onSave={(data) => handleUpdateRule(editingRule.id!, data)}
+                    editingRule={editingRule}
                 />
             )}
 

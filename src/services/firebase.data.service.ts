@@ -1,4 +1,4 @@
-import { FirestoreService } from './firebase/firestore.service';
+import { FirestoreService } from './firebase.backup/firestore.service';
 import { COLLECTIONS } from '@/config/constants';
 import { 
     ExtractionResult, 

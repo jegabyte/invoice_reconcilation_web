@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, FileText, Filter, AlertCircle, DollarSign, Calendar } from 'lucide-react';
+import { Plus, Search, FileText, Filter, AlertCircle, DollarSign, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
 import { useInvoices } from '@/hooks/useInvoices';
 import { useVendors } from '@/hooks/useVendors';
 import { LoadingSpinner, Card } from '@/components/common';
@@ -41,7 +41,8 @@ export default function InvoicesPage() {
     const metrics = {
         totalInvoices: filteredExtractions.length,
         processed: filteredExtractions.filter(e => e.status === 'COMPLETED').length,
-        pendingReview: filteredExtractions.filter(e => e.status === 'REVIEW_REQUIRED').length,
+        pending: filteredExtractions.filter(e => e.status === 'PENDING').length,
+        reviewRequired: filteredExtractions.filter(e => e.status === 'REVIEW_REQUIRED').length,
         totalAmount: filteredExtractions.reduce((sum, e) => sum + e.totalAmount, 0)
     };
 
@@ -188,49 +189,57 @@ export default function InvoicesPage() {
                 </div>
             </Card>
 
-            {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <Card className="p-4">
+            {/* Summary Cards - Compact Design */}
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                <Card className="p-3">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm font-medium text-gray-600">Total Invoices</p>
-                            <p className="mt-1 text-2xl font-bold text-gray-900">{metrics.totalInvoices}</p>
+                            <p className="text-xs font-medium text-gray-600">Total Invoices</p>
+                            <p className="mt-0.5 text-xl font-bold text-gray-900">{metrics.totalInvoices}</p>
                         </div>
-                        <FileText className="h-8 w-8 text-gray-400" />
+                        <FileText className="h-6 w-6 text-gray-400" />
                     </div>
                 </Card>
 
-                <Card className="p-4">
+                <Card className="p-3">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm font-medium text-gray-600">Processed</p>
-                            <p className="mt-1 text-2xl font-bold text-green-600">{metrics.processed}</p>
+                            <p className="text-xs font-medium text-gray-600">Processed</p>
+                            <p className="mt-0.5 text-xl font-bold text-green-600">{metrics.processed}</p>
                         </div>
-                        <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
-                            <div className="h-3 w-3 rounded-full bg-green-600"></div>
-                        </div>
+                        <CheckCircle className="h-6 w-6 text-green-500" />
                     </div>
                 </Card>
 
-                <Card className="p-4">
+                <Card className="p-3">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm font-medium text-gray-600">Pending Review</p>
-                            <p className="mt-1 text-2xl font-bold text-yellow-600">{metrics.pendingReview}</p>
+                            <p className="text-xs font-medium text-gray-600">Pending</p>
+                            <p className="mt-0.5 text-xl font-bold text-blue-600">{metrics.pending}</p>
                         </div>
-                        <AlertCircle className="h-8 w-8 text-yellow-400" />
+                        <Clock className="h-6 w-6 text-blue-500" />
                     </div>
                 </Card>
 
-                <Card className="p-4">
+                <Card className="p-3">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm font-medium text-gray-600">Total Amount</p>
-                            <p className="mt-1 text-2xl font-bold text-gray-900">
+                            <p className="text-xs font-medium text-gray-600">Review Required</p>
+                            <p className="mt-0.5 text-xl font-bold text-yellow-600">{metrics.reviewRequired}</p>
+                        </div>
+                        <AlertTriangle className="h-6 w-6 text-yellow-500" />
+                    </div>
+                </Card>
+
+                <Card className="p-3">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-xs font-medium text-gray-600">Total Amount</p>
+                            <p className="mt-0.5 text-lg font-bold text-gray-900">
                                 {formatCurrency(metrics.totalAmount)}
                             </p>
                         </div>
-                        <DollarSign className="h-8 w-8 text-green-600" />
+                        <DollarSign className="h-6 w-6 text-green-600" />
                     </div>
                 </Card>
             </div>
@@ -238,91 +247,73 @@ export default function InvoicesPage() {
             {/* Extractions List */}
             <Card>
                 <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
+                    <table className="min-w-full divide-y divide-gray-200 text-xs">
                         <thead className="bg-gray-50">
                         <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Invoice Number
+                            <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Invoice #
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Vendor
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">
                                 Date
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-2 py-1.5 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Amount
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-2 py-1.5 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Status
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Confidence
-                            </th>
-                            <th className="relative px-6 py-3">
-                                <span className="sr-only">Actions</span>
+                            <th className="px-2 py-1.5 text-right text-xs font-medium text-gray-500 uppercase">
+                                Actions
                             </th>
                         </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
                         {filteredExtractions.length === 0 ? (
                             <tr>
-                                <td colSpan={7} className="px-6 py-4 text-center text-sm text-gray-500">
-                                    No extractions found
+                                <td colSpan={6} className="px-6 py-4 text-center text-xs text-gray-500">
+                                    No invoices found
                                 </td>
                             </tr>
                         ) : (
                             filteredExtractions.map((extraction) => (
                                 <tr key={extraction.id} className="hover:bg-gray-50">
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm font-medium text-gray-900">
+                                    <td className="px-2 py-1.5 whitespace-nowrap">
+                                        <div className="text-xs font-medium text-gray-900">
                                             {extraction.invoiceNumber}
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm text-gray-900">{extraction.vendorName}</div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm text-gray-900">
-                                            {formatDate(new Date(extraction.invoiceDate))}
+                                    <td className="px-2 py-1.5 whitespace-nowrap">
+                                        <div className="text-xs text-gray-900 truncate max-w-[150px]" title={extraction.vendorName}>
+                                            {extraction.vendorName}
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm font-medium text-gray-900">
+                                    <td className="px-2 py-1.5 whitespace-nowrap hidden md:table-cell">
+                                        <div className="text-xs text-gray-600">
+                                            {new Date(extraction.invoiceDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })}
+                                        </div>
+                                    </td>
+                                    <td className="px-2 py-1.5 whitespace-nowrap text-right">
+                                        <div className="text-xs font-medium text-gray-900">
                                             {formatCurrency(extraction.totalAmount)}
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                                extraction.status === 'COMPLETED' ? 'bg-green-100 text-green-800' :
-                                                    extraction.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                                                        extraction.status === 'FAILED' ? 'bg-red-100 text-red-800' :
-                                                            'bg-blue-100 text-blue-800'
-                                            }`}>
-                                                {extraction.status}
-                                            </span>
+                                    <td className="px-2 py-1.5 whitespace-nowrap text-center">
+                                        <span className={`inline-flex px-1.5 py-0.5 text-xs font-medium rounded ${
+                                            extraction.status === 'COMPLETED' ? 'bg-green-100 text-green-800' :
+                                                extraction.status === 'PENDING' ? 'bg-blue-100 text-blue-800' :
+                                                    extraction.status === 'FAILED' ? 'bg-red-100 text-red-800' :
+                                                        'bg-yellow-100 text-yellow-800'
+                                        }`}>
+                                            {extraction.status === 'REVIEW_REQUIRED' ? 'REVIEW' : extraction.status}
+                                        </span>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="flex items-center">
-                                            <div className="flex-1 bg-gray-200 rounded-full h-2 max-w-[100px]">
-                                                <div
-                                                    className={`h-2 rounded-full ${
-                                                        extraction.confidence >= 0.8 ? 'bg-green-500' :
-                                                            extraction.confidence >= 0.6 ? 'bg-yellow-500' :
-                                                                'bg-red-500'
-                                                    }`}
-                                                    style={{ width: `${extraction.confidence * 100}%` }}
-                                                />
-                                            </div>
-                                            <span className="ml-2 text-sm text-gray-600">
-                                                    {(extraction.confidence * 100).toFixed(0)}%
-                                                </span>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <td className="px-2 py-1.5 whitespace-nowrap text-right">
                                         <button
                                             onClick={() => handleViewDetails(extraction.id!)}
-                                            className="text-blue-600 hover:text-blue-900"
+                                            className="text-xs text-blue-600 hover:text-blue-900 px-1"
                                         >
                                             View Details
                                         </button>
@@ -340,7 +331,7 @@ export default function InvoicesPage() {
                 isOpen={showAddModal}
                 onClose={() => setShowAddModal(false)}
                 onSubmit={handleAddInvoice}
-                vendors={vendors}
+                vendors={vendors.map(v => ({ id: v.id || v.vendorCode, vendorName: v.vendorName }))}
             />
         </div>
     );
