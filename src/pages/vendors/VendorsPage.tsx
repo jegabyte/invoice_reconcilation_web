@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, Filter } from 'lucide-react';
 import { Card, LoadingSpinner } from '@/components/common';
 import { VendorConfiguration } from '@/types/api.types';
 import { ApiDataService } from '@/services/api.data.service';
@@ -122,75 +122,62 @@ export default function VendorsPage() {
                 </button>
             </div>
 
-            {/* Filters */}
-            <Card className="p-3">
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-                    <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">
-                            Search
-                        </label>
-                        <div className="relative">
-                            <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                            <input
-                                type="text"
-                                placeholder="Search vendors..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-8 pr-3 py-1.5 text-sm w-full border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            />
-                        </div>
+            {/* Filters - Sleek Design */}
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                <div className="flex flex-wrap gap-2 items-center">
+                    <Filter className="h-4 w-4 text-gray-400" />
+                    
+                    {/* Search */}
+                    <div className="relative flex-1 min-w-[150px] max-w-[200px]">
+                        <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-gray-400" />
+                        <input
+                            type="text"
+                            placeholder="Search vendors..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="pl-7 pr-2 py-1 w-full bg-white border border-gray-200 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                        />
                     </div>
 
-                    <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">
-                            Type
-                        </label>
-                        <select
-                            value={filterType}
-                            onChange={(e) => setFilterType(e.target.value)}
-                            className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        >
-                            <option value="">All Types</option>
-                            <option value="OTA">OTA</option>
-                            <option value="DIRECT">Direct</option>
-                            <option value="CHANNEL_MANAGER">Channel Manager</option>
-                            <option value="GDS">GDS</option>
-                            <option value="OTHER">Other</option>
-                        </select>
-                    </div>
+                    {/* Type */}
+                    <select
+                        value={filterType}
+                        onChange={(e) => setFilterType(e.target.value)}
+                        className="px-2 py-1 bg-white border border-gray-200 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none min-w-[100px]"
+                    >
+                        <option value="">All Types</option>
+                        <option value="OTA">OTA</option>
+                        <option value="DIRECT">Direct</option>
+                        <option value="CHANNEL_MANAGER">Channel Manager</option>
+                        <option value="GDS">GDS</option>
+                        <option value="OTHER">Other</option>
+                    </select>
 
-                    <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">
-                            Status
-                        </label>
-                        <select
-                            value={filterStatus}
-                            onChange={(e) => setFilterStatus(e.target.value as any)}
-                            className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        >
-                            <option value="ALL">All Status</option>
-                            <option value="ACTIVE">Active</option>
-                            <option value="INACTIVE">Inactive</option>
-                        </select>
-                    </div>
+                    {/* Status */}
+                    <select
+                        value={filterStatus}
+                        onChange={(e) => setFilterStatus(e.target.value as any)}
+                        className="px-2 py-1 bg-white border border-gray-200 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none min-w-[100px]"
+                    >
+                        <option value="ALL">All Status</option>
+                        <option value="ACTIVE">Active</option>
+                        <option value="INACTIVE">Inactive</option>
+                    </select>
 
-                    <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">
-                            Sort By
-                        </label>
-                        <select
-                            value={sortBy}
-                            onChange={(e) => setSortBy(e.target.value as 'name' | 'code' | 'type' | 'status')}
-                            className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        >
-                            <option value="name">Name</option>
-                            <option value="code">Code</option>
-                            <option value="type">Type</option>
-                            <option value="status">Status</option>
-                        </select>
-                    </div>
+                    {/* Sort */}
+                    <select
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value as 'name' | 'code' | 'type' | 'status')}
+                        className="px-2 py-1 bg-white border border-gray-200 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none min-w-[100px]"
+                    >
+                        <option value="name">Sort: Name</option>
+                        <option value="code">Sort: Code</option>
+                        <option value="type">Sort: Type</option>
+                        <option value="status">Sort: Status</option>
+                    </select>
 
-                    <div className="flex items-end">
+                    {/* Clear */}
+                    {(searchTerm || filterType || filterStatus !== 'ALL' || sortBy !== 'name') && (
                         <button
                             onClick={() => {
                                 setSearchTerm('');
@@ -198,13 +185,13 @@ export default function VendorsPage() {
                                 setFilterStatus('ALL');
                                 setSortBy('name');
                             }}
-                            className="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                            className="px-2 py-1 text-xs text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-all"
                         >
-                            Clear Filters
+                            Clear
                         </button>
-                    </div>
+                    )}
                 </div>
-            </Card>
+            </div>
 
             {/* Vendors Table */}
             <Card>

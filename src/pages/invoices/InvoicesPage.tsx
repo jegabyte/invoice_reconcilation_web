@@ -110,28 +110,28 @@ export default function InvoicesPage() {
                 </button>
             </div>
 
-            {/* Filters - Ultra Compact Design */}
-            <Card className="p-2">
+            {/* Filters - Sleek Design */}
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
                 <div className="flex flex-wrap gap-2 items-center">
+                    <Filter className="h-4 w-4 text-gray-400" />
+                    
                     {/* Search */}
-                    <div className="flex-1 min-w-[180px] max-w-[250px]">
-                        <div className="relative">
-                            <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-                            <input
-                                type="text"
-                                placeholder="Search..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-7 pr-2 py-1 w-full border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
-                            />
-                        </div>
+                    <div className="relative flex-1 min-w-[150px] max-w-[200px]">
+                        <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-gray-400" />
+                        <input
+                            type="text"
+                            placeholder="Search..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="pl-7 pr-2 py-1 w-full bg-white border border-gray-200 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                        />
                     </div>
 
                     {/* Vendor */}
                     <select
                         value={selectedVendor}
                         onChange={(e) => setSelectedVendor(e.target.value)}
-                        className="px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none min-w-[120px]"
+                        className="px-2 py-1 bg-white border border-gray-200 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                     >
                         <option value="">All Vendors</option>
                         {vendors.map(vendor => (
@@ -145,7 +145,7 @@ export default function InvoicesPage() {
                     <select
                         value={selectedStatus}
                         onChange={(e) => setSelectedStatus(e.target.value)}
-                        className="px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none min-w-[100px]"
+                        className="px-2 py-1 bg-white border border-gray-200 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                     >
                         <option value="">All Status</option>
                         <option value="PENDING">Pending</option>
@@ -160,34 +160,28 @@ export default function InvoicesPage() {
                             type="date"
                             value={dateFrom}
                             onChange={(e) => setDateFrom(e.target.value)}
-                            className="px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                            className="px-2 py-1 bg-white border border-gray-200 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                         />
-                        <span className="text-gray-400 text-xs">-</span>
+                        <span className="text-gray-400 text-xs">to</span>
                         <input
                             type="date"
                             value={dateTo}
                             onChange={(e) => setDateTo(e.target.value)}
-                            className="px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                            className="px-2 py-1 bg-white border border-gray-200 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                         />
                     </div>
 
                     {/* Clear Filters Button */}
-                    <button
-                        onClick={clearFilters}
-                        className={`px-3 py-1 text-sm font-medium rounded transition-all ${
-                            hasActiveFilters
-                                ? 'text-blue-600 hover:text-blue-700 hover:bg-blue-50 border border-blue-300'
-                                : 'text-gray-400 border border-gray-200 cursor-not-allowed'
-                        }`}
-                        disabled={!hasActiveFilters}
-                    >
-                        <div className="flex items-center gap-1">
-                            <Filter className="h-3.5 w-3.5" />
+                    {hasActiveFilters && (
+                        <button
+                            onClick={clearFilters}
+                            className="px-2 py-1 text-xs text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-all"
+                        >
                             Clear
-                        </div>
-                    </button>
+                        </button>
+                    )}
                 </div>
-            </Card>
+            </div>
 
             {/* Summary Cards - Compact Design */}
             <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
