@@ -4,7 +4,7 @@
 export const APP_CONFIG = {
   // API Configuration
   api: {
-    baseUrl: process.env.REACT_APP_API_BASE_URL || 'https://us-central1-ava-staging-4a9e1.cloudfunctions.net/invoice-api-stub',
+    baseUrl: import.meta.env.VITE_API_BASE_URL || 'https://us-central1-ava-staging-4a9e1.cloudfunctions.net/invoice-api-stub',
     timeout: 30000,
     retryAttempts: 3,
   },

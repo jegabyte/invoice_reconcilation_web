@@ -7,12 +7,15 @@ import {
     Building2,
     Zap,
     Settings,
-    Bell
+    Bell,
+    LogOut
 } from 'lucide-react';
 import { APP_NAME } from '@/config/constants';
+import { useAuth } from '@/hooks/useAuth';
 
 export function MainLayout() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const { user, signOut } = useAuth();
 
     const navigation = [
         { name: 'Invoices', href: '/invoices', icon: FileText },
@@ -94,17 +97,28 @@ export function MainLayout() {
                                     <span className="absolute top-1 right-1 block h-2 w-2 rounded-full bg-red-400 ring-2 ring-white" />
                                 </button>
 
-                                {/* Admin Info */}
-                                <div className="flex items-center space-x-3 p-2">
-                                    <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-medium">
-                                        AD
+                                {/* User Info */}
+                                <div className="flex items-center space-x-3">
+                                    <div className="flex items-center space-x-3 p-2">
+                                        <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-medium">
+                                            {user?.name?.substring(0, 2).toUpperCase() || 'U'}
+                                        </div>
+                                        <div className="hidden md:block text-left">
+                                            <p className="text-sm font-medium text-gray-700">
+                                                {user?.name || 'User'}
+                                            </p>
+                                            <p className="text-xs text-gray-500">{user?.email}</p>
+                                        </div>
                                     </div>
-                                    <div className="hidden md:block text-left">
-                                        <p className="text-sm font-medium text-gray-700">
-                                            Admin
-                                        </p>
-                                        <p className="text-xs text-gray-500">System Administrator</p>
-                                    </div>
+                                    
+                                    {/* Logout Button */}
+                                    <button
+                                        onClick={signOut}
+                                        className="p-2 rounded-lg hover:bg-gray-100"
+                                        title="Sign out"
+                                    >
+                                        <LogOut className="h-5 w-5 text-gray-600" />
+                                    </button>
                                 </div>
                             </div>
                         </div>

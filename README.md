@@ -559,6 +559,37 @@ filterOptions.vendor.type.push({ value: 'NEW_TYPE', label: 'New Type' })
    npm run lint        # Run ESLint
    ```
 
+## Authentication
+
+The application now includes a complete authentication system:
+
+### Login Page
+- **URL**: `/login`
+- **Demo Mode**: Accepts any email/password combination for testing
+- **Production**: Replace the mock authentication in `LoginPage.tsx` with actual API calls
+
+### Protected Routes
+All main application routes are now protected and require authentication:
+- `/invoices` - Invoice management
+- `/vendors` - Vendor configuration
+- `/rules` - Validation rules
+- `/settings` - Application settings
+
+### Authentication Flow
+1. User visits any protected route → Redirected to `/login`
+2. User logs in → Token stored in localStorage
+3. User info displayed in header with logout button
+4. Token persists across page refreshes
+5. Logout clears token and redirects to login
+
+### User Roles
+The system supports three user roles (defined in auth.slice.ts):
+- `admin` - Full system access
+- `user` - Standard user access
+- `viewer` - Read-only access
+
+Note: Role-based permissions are not yet implemented in the UI components.
+
 
 ## Features
 
@@ -572,7 +603,7 @@ filterOptions.vendor.type.push({ value: 'NEW_TYPE', label: 'New Type' })
 - ✅ Add invoice modal (UI ready, needs backend integration)
 - ✅ Validation rules management with conditions and actions
 - ✅ Responsive design with Tailwind CSS
-- ✅ Mock authentication system
+- ✅ Authentication system with login page and protected routes
 
 ### Backend Integration Required
 - 🔄 Real-time status updates via WebSocket
