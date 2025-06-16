@@ -1,9 +1,8 @@
-// Use proxy in development to avoid CORS issues
-const defaultBaseURL = 'https://us-central1-ava-staging-4a9e1.cloudfunctions.net/invoice-api-stub';
+import { APP_CONFIG } from '@/config/app.config';
 
 export const API_CONFIG = {
-  baseURL: import.meta.env.VITE_API_BASE_URL || defaultBaseURL,
-  timeout: 30000,
+  baseURL: APP_CONFIG.api.baseUrl,
+  timeout: APP_CONFIG.api.timeout,
   headers: {
     'Content-Type': 'application/json',
   },
