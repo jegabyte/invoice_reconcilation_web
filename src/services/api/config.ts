@@ -1,7 +1,11 @@
 import { APP_CONFIG } from '@/config/app.config';
 
+// Use proxy in development to avoid CORS issues
+const isDevelopment = import.meta.env.MODE === 'development';
+const baseURL = isDevelopment ? '/api/invoice-api-stub' : APP_CONFIG.api.baseUrl;
+
 export const API_CONFIG = {
-  baseURL: APP_CONFIG.api.baseUrl,
+  baseURL,
   timeout: APP_CONFIG.api.timeout,
   headers: {
     'Content-Type': 'application/json',

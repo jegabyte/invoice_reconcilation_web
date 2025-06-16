@@ -42,7 +42,16 @@ export function MainLayout() {
             >
                 <div className="flex flex-col h-full">
                     <div className="flex items-center justify-between px-4 h-16 border-b border-gray-200">
-                        <h1 className="text-xl font-bold text-gray-900">{APP_NAME}</h1>
+                        <div className="flex items-center space-x-3">
+                            <img 
+                                src="https://images.squarespace-cdn.com/content/v1/5a5dbe4632601eb31977f947/1724050307112-W8G9KOZ3F7LQBY48NSWI/logo_AirAsiaMOVE.png"
+                                alt="AirAsia MOVE"
+                                className="h-8 w-auto"
+                            />
+                            <span className="text-sm font-medium text-gray-700 hidden lg:block">
+                                {APP_NAME}
+                            </span>
+                        </div>
                         <button
                             onClick={() => setSidebarOpen(false)}
                             className="lg:hidden p-1 rounded-md hover:bg-gray-100"

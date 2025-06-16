@@ -13,6 +13,14 @@ export default defineConfig({
     server: {
         port: 3000,
         open: true,
+        proxy: {
+            '/api/invoice-api-stub': {
+                target: 'https://us-central1-ava-staging-4a9e1.cloudfunctions.net',
+                changeOrigin: true,
+                secure: false,
+                rewrite: (path) => path.replace(/^\/api/, ''),
+            },
+        },
     },
     build: {
         outDir: 'dist',

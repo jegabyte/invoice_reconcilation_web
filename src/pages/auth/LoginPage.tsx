@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { loginStart, loginSuccess, loginFailure } from '@/store/slices/auth.slice';
-import { FileText, Calculator, Receipt } from 'lucide-react';
+import { FileText } from 'lucide-react';
 
 export default function LoginPage() {
     const navigate = useNavigate();
@@ -70,25 +70,24 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md w-full space-y-8">
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 py-6 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-md w-full space-y-6">
                 <div>
                     <div className="flex justify-center">
-                        <div className="bg-blue-600 p-4 rounded-full relative">
-                            <Receipt className="h-10 w-10 text-white" />
-                            <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-1">
-                                <Calculator className="h-4 w-4 text-white" />
-                            </div>
-                        </div>
+                        <img 
+                            src="https://images.squarespace-cdn.com/content/v1/5a5dbe4632601eb31977f947/1724050307112-W8G9KOZ3F7LQBY48NSWI/logo_AirAsiaMOVE.png"
+                            alt="AirAsia MOVE"
+                            className="h-48 w-auto"
+                        />
                     </div>
-                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                    <h2 className="mt-4 text-center text-3xl font-extrabold text-gray-900">
                         Invoice Reconciliation Portal
                     </h2>
                     <p className="mt-2 text-center text-sm text-gray-600">
                         Sign in to manage invoices and reconciliation
                     </p>
                 </div>
-                <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+                <form className="mt-6 space-y-6" onSubmit={handleSubmit}>
                     <div className="rounded-md shadow-sm -space-y-px">
                         <div>
                             <label htmlFor="email" className="sr-only">
