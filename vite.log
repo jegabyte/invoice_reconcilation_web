@@ -1,0 +1,63 @@
+
+> invoice-reconciliation-app@1.0.0 dev:client
+> vite
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+  VITE v5.4.19  ready in 96 ms
+
+  ➜  Local:   http://localhost:3000/
+  ➜  Network: use --host to expose
+9:05:48 AM [vite] http proxy error: /api/invoice-api-stub/invoice_summaries
+Error: connect ECONNREFUSED ::1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1555:16)
+9:05:48 AM [vite] http proxy error: /api/invoice-api-stub/vendors
+Error: connect ECONNREFUSED ::1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1555:16)
+9:05:48 AM [vite] http proxy error: /api/invoice-api-stub/invoice_summaries
+Error: connect ECONNREFUSED ::1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1555:16)
+9:05:48 AM [vite] http proxy error: /api/invoice-api-stub/vendors
+Error: connect ECONNREFUSED ::1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1555:16)
+9:05:48 AM [vite] http proxy error: /api/invoice-api-stub/invoice_summaries
+Error: connect ECONNREFUSED ::1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1555:16)
+9:05:48 AM [vite] http proxy error: /api/invoice-api-stub/vendors
+Error: connect ECONNREFUSED ::1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1555:16)
+9:05:48 AM [vite] http proxy error: /api/invoice-api-stub/vendors
+Error: connect ECONNREFUSED ::1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1555:16)
+9:05:48 AM [vite] http proxy error: /api/invoice-api-stub/invoice_summaries
+Error: connect ECONNREFUSED ::1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1555:16)
+9:05:48 AM [vite] http proxy error: /api/invoice-api-stub/invoice_summaries
+Error: connect ECONNREFUSED ::1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1555:16)
+9:05:48 AM [vite] http proxy error: /api/invoice-api-stub/invoice_summaries
+Error: connect ECONNREFUSED ::1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1555:16)
+9:08:32 AM [vite] hmr update /src/styles/globals.css, /src/pages/invoices/InvoiceDetailPage.tsx, /src/pages/vendors/VendorsPage.tsx, /src/pages/invoices/InvoicesPage.tsx, /src/pages/rules/RulesPage.tsx
+9:08:51 AM [vite] hmr update /src/styles/globals.css, /src/pages/invoices/InvoiceDetailPage.tsx, /src/pages/vendors/VendorsPage.tsx, /src/pages/invoices/InvoicesPage.tsx, /src/pages/rules/RulesPage.tsx
+9:09:00 AM [vite] hmr update /src/styles/globals.css, /src/pages/invoices/InvoiceDetailPage.tsx, /src/pages/vendors/VendorsPage.tsx, /src/pages/invoices/InvoicesPage.tsx, /src/pages/rules/RulesPage.tsx
+9:14:49 AM [vite] page reload src/services/firebase/reconciliation.service.ts
+9:14:49 AM [vite] page reload src/services/firebase/status.service.ts
+9:14:49 AM [vite] page reload src/services/firebase/extraction.service.ts
+9:14:49 AM [vite] page reload src/services/firebase/converters.ts
+9:14:49 AM [vite] page reload src/services/firebase/rules.service.ts
+9:14:49 AM [vite] page reload src/services/firebase/base.service.ts
+9:14:49 AM [vite] page reload src/services/firebase/index.ts
+9:14:49 AM [vite] page reload src/services/firebase/vendor.service.ts
+9:14:49 AM [vite] page reload src/services/firebase.backup/data.service.ts
+9:14:49 AM [vite] page reload src/services/firebase.backup/firestore.service.ts
+9:14:49 AM [vite] page reload src/services/firebase.backup/index.ts
+9:14:49 AM [vite] page reload src/services/firebase.backup/storage.service.ts
+9:14:49 AM [vite] page reload src/services/firebase.data.service.ts
+9:14:49 AM [vite] page reload src/types/firestore.ts
+9:16:54 AM [vite] .env changed, restarting server...
+9:16:54 AM [vite] server restarted.
+9:19:14 AM [vite] .env changed, restarting server...
+9:19:14 AM [vite] server restarted.
+9:21:59 AM [vite] .env changed, restarting server...
+9:21:59 AM [vite] server restarted.

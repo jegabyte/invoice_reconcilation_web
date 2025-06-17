@@ -14,10 +14,16 @@ class ApiClient {
     // Request interceptor
     this.client.interceptors.request.use(
       (config) => {
-        // Add auth token from environment variable
-        const token = import.meta.env.VITE_GOOGLE_AUTH_TOKEN;
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`;
+        // Use gcloud token for Cloud Run authentication
+        const gcloudToken = import.meta.env.VITE_GCLOUD_TOKEN;
+        if (gcloudToken) {
+          config.headers.Authorization = `Bearer ${gcloudToken}`;
+        } else {
+          // Fallback to Google OAuth token
+          const token = localStorage.getItem('googleAccessToken');
+          if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+          }
         }
         return config;
       },

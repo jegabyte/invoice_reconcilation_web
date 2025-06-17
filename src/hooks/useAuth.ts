@@ -10,22 +10,44 @@ export function useAuth() {
     const auth = useSelector((state: RootState) => state.auth);
 
     useEffect(() => {
-        // Check for existing auth token on mount
-        const token = localStorage.getItem('authToken');
+        // Check for existing Google OAuth token on mount
+        const token = localStorage.getItem('googleAccessToken');
         if (token && !auth.isAuthenticated) {
-            // In a real app, validate the token with the backend
-            // For now, we'll create a mock user
-            const mockUser = {
-                id: '1',
-                email: 'admin@example.com',
-                name: 'Admin',
-                role: 'admin' as const
-            };
-            dispatch(loginSuccess(mockUser));
+            // Validate the token with Google
+            fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Invalid token');
+                }
+            })
+            .then(userInfo => {
+                const user = {
+                    id: userInfo.sub,
+                    email: userInfo.email,
+                    name: userInfo.name || userInfo.email.split('@')[0],
+                    picture: userInfo.picture,
+                    role: 'admin' as const,
+                    accessToken: token
+                };
+                dispatch(loginSuccess(user));
+            })
+            .catch(() => {
+                // Token is invalid, remove it
+                localStorage.removeItem('googleAccessToken');
+            });
         }
     }, [dispatch, auth.isAuthenticated]);
 
     const signOut = () => {
+        // Clear Google OAuth token
+        localStorage.removeItem('googleAccessToken');
+        // Clear old auth token if it exists
         localStorage.removeItem('authToken');
         dispatch(logout());
         navigate('/login');

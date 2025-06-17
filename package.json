@@ -3,10 +3,12 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
+    "@google-cloud/firestore": "^7.10.0",
+    "@react-oauth/google": "^0.12.2",
     "@reduxjs/toolkit": "^2.2.5",
-    "axios": "^1.7.2",
     "date-fns": "^3.6.0",
-    "firebase": "^11.9.0",
+    "dotenv": "^16.5.0",
+    "express": "^4.19.2",
     "jspdf": "^3.0.1",
     "jspdf-autotable": "^5.0.2",
     "lucide-react": "^0.395.0",
@@ -27,10 +29,14 @@
     "@typescript-eslint/parser": "^7.13.0",
     "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.4.19",
+    "axios": "^1.10.0",
+    "concurrently": "^8.2.2",
     "eslint": "^8.57.0",
     "eslint-plugin-react": "^7.34.2",
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-react-refresh": "^0.4.7",
+    "google-auth-library": "^10.1.0",
+    "nodemon": "^3.1.4",
     "postcss": "^8.4.38",
     "tailwindcss": "^3.4.4",
     "ts-node": "^10.9.2",
@@ -38,12 +44,18 @@
     "vite": "^5.3.1"
   },
   "scripts": {
-    "dev": "vite",
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "nodemon server.js",
+    "dev:client": "vite",
     "build": "vite build",
     "build:check": "tsc && vite build",
     "preview": "vite preview",
+    "start": "node server.js",
+    "start:prod": "npm run build && npm run start",
     "type-check": "tsc --noEmit",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "deploy": "npm run build && gcloud run deploy invoice-app --source . --allow-unauthenticated",
+    "deploy:staging": "npm run build && gcloud run deploy invoice-app --source . --project=ava-staging-4a9e1 --allow-unauthenticated"
   },
   "browserslist": {
     "production": [

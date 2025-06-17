@@ -1,0 +1,721 @@
+
+> invoice-reconciliation-app@1.0.0 dev:server
+> nodemon server.js
+
+[33m[nodemon] 3.1.10[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching path(s): *.*[39m
+[33m[nodemon] watching extensions: js,mjs,cjs,json[39m
+[32m[nodemon] starting `node server.js`[39m
+Server running on port 3001
+Using Firestore project: aiva-e74f3
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node server.js`[39m
+Server running on port 3001
+Using Firestore project: aiva-e74f3
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node server.js`[39m
+Server running on port 3001
+Using Firestore project: aiva-e74f3
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node server.js`[39m
+Server running on port 3001
+Using Firestore project: aiva-e74f3
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node server.js`[39m
+Server running on port 3001
+Using Firestore project: your-project-id
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node server.js`[39m
+Server running on port 3001
+Using Firestore project: your-project-id
+Error fetching extractions: Error: 7 PERMISSION_DENIED: Cloud Firestore API has not been used in project your-project-id before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=your-project-id then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.
+    at callErrorFromStatus (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/call.js:32:19)
+    at Object.onReceiveStatus (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/client.js:359:73)
+    at Object.onReceiveStatus (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/client-interceptors.js:324:181)
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/resolving-call.js:135:78
+    at process.processTicksAndRejections (node:internal/process/task_queues:77:11)
+for call at
+    at ServiceClientImpl.makeServerStreamRequest (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/client.js:342:32)
+    at ServiceClientImpl.<anonymous> (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/make-client.js:105:19)
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:237:29
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:38:28
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/normalCalls/timeout.js:44:16
+    at Object.request (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/streamingCalls/streaming.js:234:40)
+    at makeRequest (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/retry-request/index.js:159:28)
+    at retryRequest (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/retry-request/index.js:119:5)
+    at StreamProxy.setStream (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/streamingCalls/streaming.js:225:37)
+    at StreamingApiCaller.call (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:54:16)
+Caused by: Error
+    at QueryUtil._getResponse (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/reference/query-util.js:44:23)
+    at CollectionReference._getResponse (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/reference/query.js:784:32)
+    at CollectionReference._get (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/reference/query.js:777:35)
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/reference/query.js:745:43
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@opentelemetry/api/build/src/context/NoopContextManager.js:25:19)
+    at ContextAPI.with (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@opentelemetry/api/build/src/api/context.js:60:46)
+    at NoopTracer.startActiveSpan (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@opentelemetry/api/build/src/trace/NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@opentelemetry/api/build/src/trace/ProxyTracer.js:36:24)
+    at EnabledTraceUtil.startActiveSpan (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28) {
+  code: 7,
+  details: 'Cloud Firestore API has not been used in project your-project-id before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=your-project-id then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.',
+  metadata: Metadata {
+    internalRepr: Map(5) {
+      'google.rpc.errorinfo-bin' => [Array],
+      'google.rpc.help-bin' => [Array],
+      'google.rpc.localizedmessage-bin' => [Array],
+      'grpc-status-details-bin' => [Array],
+      'x-debug-tracking-id' => [Array]
+    },
+    options: {}
+  },
+  statusDetails: [
+    ErrorInfo {
+      metadata: [Object],
+      reason: 'SERVICE_DISABLED',
+      domain: 'googleapis.com'
+    },
+    LocalizedMessage {
+      locale: 'en-US',
+      message: 'Cloud Firestore API has not been used in project your-project-id before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=your-project-id then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.'
+    },
+    Help { links: [Array] }
+  ],
+  reason: 'SERVICE_DISABLED',
+  domain: 'googleapis.com',
+  errorInfoMetadata: {
+    activationUrl: 'https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=your-project-id',
+    service: 'firestore.googleapis.com',
+    serviceTitle: 'Cloud Firestore API',
+    consumer: 'projects/your-project-id',
+    containerInfo: 'your-project-id'
+  }
+}
+Error fetching vendors: Error: 7 PERMISSION_DENIED: Cloud Firestore API has not been used in project your-project-id before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=your-project-id then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.
+    at callErrorFromStatus (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/call.js:32:19)
+    at Object.onReceiveStatus (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/client.js:359:73)
+    at Object.onReceiveStatus (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/client-interceptors.js:324:181)
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/resolving-call.js:135:78
+    at process.processTicksAndRejections (node:internal/process/task_queues:77:11)
+for call at
+    at ServiceClientImpl.makeServerStreamRequest (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/client.js:342:32)
+    at ServiceClientImpl.<anonymous> (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/make-client.js:105:19)
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:237:29
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:38:28
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/normalCalls/timeout.js:44:16
+    at Object.request (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/streamingCalls/streaming.js:234:40)
+    at makeRequest (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/retry-request/index.js:159:28)
+    at retryRequest (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/retry-request/index.js:119:5)
+    at StreamProxy.setStream (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/streamingCalls/streaming.js:225:37)
+    at StreamingApiCaller.call (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:54:16)
+Caused by: Error
+    at QueryUtil._getResponse (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/reference/query-util.js:44:23)
+    at CollectionReference._getResponse (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/reference/query.js:784:32)
+    at CollectionReference._get (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/reference/query.js:777:35)
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/reference/query.js:745:43
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@opentelemetry/api/build/src/context/NoopContextManager.js:25:19)
+    at ContextAPI.with (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@opentelemetry/api/build/src/api/context.js:60:46)
+    at NoopTracer.startActiveSpan (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@opentelemetry/api/build/src/trace/NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@opentelemetry/api/build/src/trace/ProxyTracer.js:36:24)
+    at EnabledTraceUtil.startActiveSpan (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28) {
+  code: 7,
+  details: 'Cloud Firestore API has not been used in project your-project-id before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=your-project-id then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.',
+  metadata: Metadata {
+    internalRepr: Map(5) {
+      'google.rpc.errorinfo-bin' => [Array],
+      'google.rpc.help-bin' => [Array],
+      'google.rpc.localizedmessage-bin' => [Array],
+      'grpc-status-details-bin' => [Array],
+      'x-debug-tracking-id' => [Array]
+    },
+    options: {}
+  },
+  statusDetails: [
+    ErrorInfo {
+      metadata: [Object],
+      reason: 'SERVICE_DISABLED',
+      domain: 'googleapis.com'
+    },
+    LocalizedMessage {
+      locale: 'en-US',
+      message: 'Cloud Firestore API has not been used in project your-project-id before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=your-project-id then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.'
+    },
+    Help { links: [Array] }
+  ],
+  reason: 'SERVICE_DISABLED',
+  domain: 'googleapis.com',
+  errorInfoMetadata: {
+    service: 'firestore.googleapis.com',
+    consumer: 'projects/your-project-id',
+    activationUrl: 'https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=your-project-id',
+    serviceTitle: 'Cloud Firestore API',
+    containerInfo: 'your-project-id'
+  }
+}
+Error fetching extractions: Error: 7 PERMISSION_DENIED: Cloud Firestore API has not been used in project your-project-id before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=your-project-id then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.
+    at callErrorFromStatus (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/call.js:32:19)
+    at Object.onReceiveStatus (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/client.js:359:73)
+    at Object.onReceiveStatus (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/client-interceptors.js:324:181)
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/resolving-call.js:135:78
+    at process.processTicksAndRejections (node:internal/process/task_queues:77:11)
+for call at
+    at ServiceClientImpl.makeServerStreamRequest (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/client.js:342:32)
+    at ServiceClientImpl.<anonymous> (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/make-client.js:105:19)
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:237:29
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:38:28
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/normalCalls/timeout.js:44:16
+    at Object.request (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/streamingCalls/streaming.js:234:40)
+    at makeRequest (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/retry-request/index.js:159:28)
+    at retryRequest (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/retry-request/index.js:119:5)
+    at StreamProxy.setStream (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/streamingCalls/streaming.js:225:37)
+    at StreamingApiCaller.call (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:54:16)
+Caused by: Error
+    at QueryUtil._getResponse (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/reference/query-util.js:44:23)
+    at CollectionReference._getResponse (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/reference/query.js:784:32)
+    at CollectionReference._get (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/reference/query.js:777:35)
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/reference/query.js:745:43
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@opentelemetry/api/build/src/context/NoopContextManager.js:25:19)
+    at ContextAPI.with (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@opentelemetry/api/build/src/api/context.js:60:46)
+    at NoopTracer.startActiveSpan (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@opentelemetry/api/build/src/trace/NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@opentelemetry/api/build/src/trace/ProxyTracer.js:36:24)
+    at EnabledTraceUtil.startActiveSpan (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28) {
+  code: 7,
+  details: 'Cloud Firestore API has not been used in project your-project-id before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=your-project-id then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.',
+  metadata: Metadata {
+    internalRepr: Map(5) {
+      'google.rpc.errorinfo-bin' => [Array],
+      'google.rpc.help-bin' => [Array],
+      'google.rpc.localizedmessage-bin' => [Array],
+      'grpc-status-details-bin' => [Array],
+      'x-debug-tracking-id' => [Array]
+    },
+    options: {}
+  },
+  statusDetails: [
+    ErrorInfo {
+      metadata: [Object],
+      reason: 'SERVICE_DISABLED',
+      domain: 'googleapis.com'
+    },
+    LocalizedMessage {
+      locale: 'en-US',
+      message: 'Cloud Firestore API has not been used in project your-project-id before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=your-project-id then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.'
+    },
+    Help { links: [Array] }
+  ],
+  reason: 'SERVICE_DISABLED',
+  domain: 'googleapis.com',
+  errorInfoMetadata: {
+    service: 'firestore.googleapis.com',
+    activationUrl: 'https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=your-project-id',
+    serviceTitle: 'Cloud Firestore API',
+    consumer: 'projects/your-project-id',
+    containerInfo: 'your-project-id'
+  }
+}
+Error fetching vendors: Error: 7 PERMISSION_DENIED: Cloud Firestore API has not been used in project your-project-id before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=your-project-id then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.
+    at callErrorFromStatus (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/call.js:32:19)
+    at Object.onReceiveStatus (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/client.js:359:73)
+    at Object.onReceiveStatus (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/client-interceptors.js:324:181)
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/resolving-call.js:135:78
+    at process.processTicksAndRejections (node:internal/process/task_queues:77:11)
+for call at
+    at ServiceClientImpl.makeServerStreamRequest (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/client.js:342:32)
+    at ServiceClientImpl.<anonymous> (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/make-client.js:105:19)
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:237:29
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:38:28
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/normalCalls/timeout.js:44:16
+    at Object.request (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/streamingCalls/streaming.js:234:40)
+    at makeRequest (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/retry-request/index.js:159:28)
+    at retryRequest (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/retry-request/index.js:119:5)
+    at StreamProxy.setStream (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/streamingCalls/streaming.js:225:37)
+    at StreamingApiCaller.call (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:54:16)
+Caused by: Error
+    at QueryUtil._getResponse (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/reference/query-util.js:44:23)
+    at CollectionReference._getResponse (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/reference/query.js:784:32)
+    at CollectionReference._get (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/reference/query.js:777:35)
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/reference/query.js:745:43
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@opentelemetry/api/build/src/context/NoopContextManager.js:25:19)
+    at ContextAPI.with (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@opentelemetry/api/build/src/api/context.js:60:46)
+    at NoopTracer.startActiveSpan (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@opentelemetry/api/build/src/trace/NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@opentelemetry/api/build/src/trace/ProxyTracer.js:36:24)
+    at EnabledTraceUtil.startActiveSpan (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28) {
+  code: 7,
+  details: 'Cloud Firestore API has not been used in project your-project-id before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=your-project-id then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.',
+  metadata: Metadata {
+    internalRepr: Map(5) {
+      'google.rpc.errorinfo-bin' => [Array],
+      'google.rpc.help-bin' => [Array],
+      'google.rpc.localizedmessage-bin' => [Array],
+      'grpc-status-details-bin' => [Array],
+      'x-debug-tracking-id' => [Array]
+    },
+    options: {}
+  },
+  statusDetails: [
+    ErrorInfo {
+      metadata: [Object],
+      reason: 'SERVICE_DISABLED',
+      domain: 'googleapis.com'
+    },
+    LocalizedMessage {
+      locale: 'en-US',
+      message: 'Cloud Firestore API has not been used in project your-project-id before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=your-project-id then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.'
+    },
+    Help { links: [Array] }
+  ],
+  reason: 'SERVICE_DISABLED',
+  domain: 'googleapis.com',
+  errorInfoMetadata: {
+    service: 'firestore.googleapis.com',
+    serviceTitle: 'Cloud Firestore API',
+    consumer: 'projects/your-project-id',
+    containerInfo: 'your-project-id',
+    activationUrl: 'https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=your-project-id'
+  }
+}
+Error fetching extractions: Error: 7 PERMISSION_DENIED: Cloud Firestore API has not been used in project your-project-id before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=your-project-id then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.
+    at callErrorFromStatus (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/call.js:32:19)
+    at Object.onReceiveStatus (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/client.js:359:73)
+    at Object.onReceiveStatus (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/client-interceptors.js:324:181)
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/resolving-call.js:135:78
+    at process.processTicksAndRejections (node:internal/process/task_queues:77:11)
+for call at
+    at ServiceClientImpl.makeServerStreamRequest (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/client.js:342:32)
+    at ServiceClientImpl.<anonymous> (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/make-client.js:105:19)
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:237:29
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:38:28
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/normalCalls/timeout.js:44:16
+    at Object.request (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/streamingCalls/streaming.js:234:40)
+    at makeRequest (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/retry-request/index.js:159:28)
+    at retryRequest (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/retry-request/index.js:119:5)
+    at StreamProxy.setStream (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/streamingCalls/streaming.js:225:37)
+    at StreamingApiCaller.call (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:54:16)
+Caused by: Error
+    at QueryUtil._getResponse (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/reference/query-util.js:44:23)
+    at CollectionReference._getResponse (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/reference/query.js:784:32)
+    at CollectionReference._get (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/reference/query.js:777:35)
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/reference/query.js:745:43
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@opentelemetry/api/build/src/context/NoopContextManager.js:25:19)
+    at ContextAPI.with (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@opentelemetry/api/build/src/api/context.js:60:46)
+    at NoopTracer.startActiveSpan (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@opentelemetry/api/build/src/trace/NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@opentelemetry/api/build/src/trace/ProxyTracer.js:36:24)
+    at EnabledTraceUtil.startActiveSpan (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28) {
+  code: 7,
+  details: 'Cloud Firestore API has not been used in project your-project-id before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=your-project-id then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.',
+  metadata: Metadata {
+    internalRepr: Map(5) {
+      'google.rpc.errorinfo-bin' => [Array],
+      'google.rpc.help-bin' => [Array],
+      'google.rpc.localizedmessage-bin' => [Array],
+      'grpc-status-details-bin' => [Array],
+      'x-debug-tracking-id' => [Array]
+    },
+    options: {}
+  },
+  statusDetails: [
+    ErrorInfo {
+      metadata: [Object],
+      reason: 'SERVICE_DISABLED',
+      domain: 'googleapis.com'
+    },
+    LocalizedMessage {
+      locale: 'en-US',
+      message: 'Cloud Firestore API has not been used in project your-project-id before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=your-project-id then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.'
+    },
+    Help { links: [Array] }
+  ],
+  reason: 'SERVICE_DISABLED',
+  domain: 'googleapis.com',
+  errorInfoMetadata: {
+    activationUrl: 'https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=your-project-id',
+    consumer: 'projects/your-project-id',
+    service: 'firestore.googleapis.com',
+    serviceTitle: 'Cloud Firestore API',
+    containerInfo: 'your-project-id'
+  }
+}
+Error fetching vendors: Error: 7 PERMISSION_DENIED: Cloud Firestore API has not been used in project your-project-id before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=your-project-id then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.
+    at callErrorFromStatus (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/call.js:32:19)
+    at Object.onReceiveStatus (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/client.js:359:73)
+    at Object.onReceiveStatus (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/client-interceptors.js:324:181)
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/resolving-call.js:135:78
+    at process.processTicksAndRejections (node:internal/process/task_queues:77:11)
+for call at
+    at ServiceClientImpl.makeServerStreamRequest (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/client.js:342:32)
+    at ServiceClientImpl.<anonymous> (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/make-client.js:105:19)
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:237:29
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:38:28
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/normalCalls/timeout.js:44:16
+    at Object.request (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/streamingCalls/streaming.js:234:40)
+    at makeRequest (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/retry-request/index.js:159:28)
+    at retryRequest (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/retry-request/index.js:119:5)
+    at StreamProxy.setStream (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/streamingCalls/streaming.js:225:37)
+    at StreamingApiCaller.call (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:54:16)
+Caused by: Error
+    at QueryUtil._getResponse (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/reference/query-util.js:44:23)
+    at CollectionReference._getResponse (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/reference/query.js:784:32)
+    at CollectionReference._get (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/reference/query.js:777:35)
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/reference/query.js:745:43
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@opentelemetry/api/build/src/context/NoopContextManager.js:25:19)
+    at ContextAPI.with (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@opentelemetry/api/build/src/api/context.js:60:46)
+    at NoopTracer.startActiveSpan (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@opentelemetry/api/build/src/trace/NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@opentelemetry/api/build/src/trace/ProxyTracer.js:36:24)
+    at EnabledTraceUtil.startActiveSpan (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28) {
+  code: 7,
+  details: 'Cloud Firestore API has not been used in project your-project-id before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=your-project-id then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.',
+  metadata: Metadata {
+    internalRepr: Map(5) {
+      'google.rpc.errorinfo-bin' => [Array],
+      'google.rpc.help-bin' => [Array],
+      'google.rpc.localizedmessage-bin' => [Array],
+      'grpc-status-details-bin' => [Array],
+      'x-debug-tracking-id' => [Array]
+    },
+    options: {}
+  },
+  statusDetails: [
+    ErrorInfo {
+      metadata: [Object],
+      reason: 'SERVICE_DISABLED',
+      domain: 'googleapis.com'
+    },
+    LocalizedMessage {
+      locale: 'en-US',
+      message: 'Cloud Firestore API has not been used in project your-project-id before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=your-project-id then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.'
+    },
+    Help { links: [Array] }
+  ],
+  reason: 'SERVICE_DISABLED',
+  domain: 'googleapis.com',
+  errorInfoMetadata: {
+    serviceTitle: 'Cloud Firestore API',
+    service: 'firestore.googleapis.com',
+    consumer: 'projects/your-project-id',
+    activationUrl: 'https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=your-project-id',
+    containerInfo: 'your-project-id'
+  }
+}
+Error fetching extractions: Error: 7 PERMISSION_DENIED: Cloud Firestore API has not been used in project your-project-id before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=your-project-id then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.
+    at callErrorFromStatus (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/call.js:32:19)
+    at Object.onReceiveStatus (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/client.js:359:73)
+    at Object.onReceiveStatus (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/client-interceptors.js:324:181)
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/resolving-call.js:135:78
+    at process.processTicksAndRejections (node:internal/process/task_queues:77:11)
+for call at
+    at ServiceClientImpl.makeServerStreamRequest (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/client.js:342:32)
+    at ServiceClientImpl.<anonymous> (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/make-client.js:105:19)
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:237:29
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:38:28
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/normalCalls/timeout.js:44:16
+    at Object.request (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/streamingCalls/streaming.js:234:40)
+    at makeRequest (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/retry-request/index.js:159:28)
+    at retryRequest (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/retry-request/index.js:119:5)
+    at StreamProxy.setStream (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/streamingCalls/streaming.js:225:37)
+    at StreamingApiCaller.call (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:54:16)
+Caused by: Error
+    at QueryUtil._getResponse (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/reference/query-util.js:44:23)
+    at CollectionReference._getResponse (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/reference/query.js:784:32)
+    at CollectionReference._get (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/reference/query.js:777:35)
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/reference/query.js:745:43
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@opentelemetry/api/build/src/context/NoopContextManager.js:25:19)
+    at ContextAPI.with (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@opentelemetry/api/build/src/api/context.js:60:46)
+    at NoopTracer.startActiveSpan (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@opentelemetry/api/build/src/trace/NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@opentelemetry/api/build/src/trace/ProxyTracer.js:36:24)
+    at EnabledTraceUtil.startActiveSpan (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28) {
+  code: 7,
+  details: 'Cloud Firestore API has not been used in project your-project-id before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=your-project-id then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.',
+  metadata: Metadata {
+    internalRepr: Map(5) {
+      'google.rpc.errorinfo-bin' => [Array],
+      'google.rpc.help-bin' => [Array],
+      'google.rpc.localizedmessage-bin' => [Array],
+      'grpc-status-details-bin' => [Array],
+      'x-debug-tracking-id' => [Array]
+    },
+    options: {}
+  },
+  statusDetails: [
+    ErrorInfo {
+      metadata: [Object],
+      reason: 'SERVICE_DISABLED',
+      domain: 'googleapis.com'
+    },
+    LocalizedMessage {
+      locale: 'en-US',
+      message: 'Cloud Firestore API has not been used in project your-project-id before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=your-project-id then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.'
+    },
+    Help { links: [Array] }
+  ],
+  reason: 'SERVICE_DISABLED',
+  domain: 'googleapis.com',
+  errorInfoMetadata: {
+    service: 'firestore.googleapis.com',
+    serviceTitle: 'Cloud Firestore API',
+    containerInfo: 'your-project-id',
+    activationUrl: 'https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=your-project-id',
+    consumer: 'projects/your-project-id'
+  }
+}
+Error fetching vendors: Error: 7 PERMISSION_DENIED: Cloud Firestore API has not been used in project your-project-id before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=your-project-id then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.
+    at callErrorFromStatus (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/call.js:32:19)
+    at Object.onReceiveStatus (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/client.js:359:73)
+    at Object.onReceiveStatus (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/client-interceptors.js:324:181)
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/resolving-call.js:135:78
+    at process.processTicksAndRejections (node:internal/process/task_queues:77:11)
+for call at
+    at ServiceClientImpl.makeServerStreamRequest (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/client.js:342:32)
+    at ServiceClientImpl.<anonymous> (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/make-client.js:105:19)
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:237:29
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:38:28
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/normalCalls/timeout.js:44:16
+    at Object.request (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/streamingCalls/streaming.js:234:40)
+    at makeRequest (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/retry-request/index.js:159:28)
+    at retryRequest (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/retry-request/index.js:119:5)
+    at StreamProxy.setStream (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/streamingCalls/streaming.js:225:37)
+    at StreamingApiCaller.call (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:54:16)
+Caused by: Error
+    at QueryUtil._getResponse (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/reference/query-util.js:44:23)
+    at CollectionReference._getResponse (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/reference/query.js:784:32)
+    at CollectionReference._get (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/reference/query.js:777:35)
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/reference/query.js:745:43
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@opentelemetry/api/build/src/context/NoopContextManager.js:25:19)
+    at ContextAPI.with (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@opentelemetry/api/build/src/api/context.js:60:46)
+    at NoopTracer.startActiveSpan (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@opentelemetry/api/build/src/trace/NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@opentelemetry/api/build/src/trace/ProxyTracer.js:36:24)
+    at EnabledTraceUtil.startActiveSpan (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28) {
+  code: 7,
+  details: 'Cloud Firestore API has not been used in project your-project-id before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=your-project-id then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.',
+  metadata: Metadata {
+    internalRepr: Map(5) {
+      'google.rpc.errorinfo-bin' => [Array],
+      'google.rpc.help-bin' => [Array],
+      'google.rpc.localizedmessage-bin' => [Array],
+      'grpc-status-details-bin' => [Array],
+      'x-debug-tracking-id' => [Array]
+    },
+    options: {}
+  },
+  statusDetails: [
+    ErrorInfo {
+      metadata: [Object],
+      reason: 'SERVICE_DISABLED',
+      domain: 'googleapis.com'
+    },
+    LocalizedMessage {
+      locale: 'en-US',
+      message: 'Cloud Firestore API has not been used in project your-project-id before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=your-project-id then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.'
+    },
+    Help { links: [Array] }
+  ],
+  reason: 'SERVICE_DISABLED',
+  domain: 'googleapis.com',
+  errorInfoMetadata: {
+    containerInfo: 'your-project-id',
+    consumer: 'projects/your-project-id',
+    activationUrl: 'https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=your-project-id',
+    serviceTitle: 'Cloud Firestore API',
+    service: 'firestore.googleapis.com'
+  }
+}
+Error fetching extractions: Error: 7 PERMISSION_DENIED: Cloud Firestore API has not been used in project your-project-id before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=your-project-id then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.
+    at callErrorFromStatus (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/call.js:32:19)
+    at Object.onReceiveStatus (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/client.js:359:73)
+    at Object.onReceiveStatus (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/client-interceptors.js:324:181)
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/resolving-call.js:135:78
+    at process.processTicksAndRejections (node:internal/process/task_queues:77:11)
+for call at
+    at ServiceClientImpl.makeServerStreamRequest (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/client.js:342:32)
+    at ServiceClientImpl.<anonymous> (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/make-client.js:105:19)
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:237:29
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:38:28
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/normalCalls/timeout.js:44:16
+    at Object.request (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/streamingCalls/streaming.js:234:40)
+    at makeRequest (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/retry-request/index.js:159:28)
+    at retryRequest (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/retry-request/index.js:119:5)
+    at StreamProxy.setStream (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/streamingCalls/streaming.js:225:37)
+    at StreamingApiCaller.call (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:54:16)
+Caused by: Error
+    at QueryUtil._getResponse (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/reference/query-util.js:44:23)
+    at CollectionReference._getResponse (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/reference/query.js:784:32)
+    at CollectionReference._get (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/reference/query.js:777:35)
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/reference/query.js:745:43
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@opentelemetry/api/build/src/context/NoopContextManager.js:25:19)
+    at ContextAPI.with (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@opentelemetry/api/build/src/api/context.js:60:46)
+    at NoopTracer.startActiveSpan (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@opentelemetry/api/build/src/trace/NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@opentelemetry/api/build/src/trace/ProxyTracer.js:36:24)
+    at EnabledTraceUtil.startActiveSpan (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28) {
+  code: 7,
+  details: 'Cloud Firestore API has not been used in project your-project-id before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=your-project-id then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.',
+  metadata: Metadata {
+    internalRepr: Map(5) {
+      'google.rpc.errorinfo-bin' => [Array],
+      'google.rpc.help-bin' => [Array],
+      'google.rpc.localizedmessage-bin' => [Array],
+      'grpc-status-details-bin' => [Array],
+      'x-debug-tracking-id' => [Array]
+    },
+    options: {}
+  },
+  statusDetails: [
+    ErrorInfo {
+      metadata: [Object],
+      reason: 'SERVICE_DISABLED',
+      domain: 'googleapis.com'
+    },
+    LocalizedMessage {
+      locale: 'en-US',
+      message: 'Cloud Firestore API has not been used in project your-project-id before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=your-project-id then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.'
+    },
+    Help { links: [Array] }
+  ],
+  reason: 'SERVICE_DISABLED',
+  domain: 'googleapis.com',
+  errorInfoMetadata: {
+    containerInfo: 'your-project-id',
+    serviceTitle: 'Cloud Firestore API',
+    service: 'firestore.googleapis.com',
+    activationUrl: 'https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=your-project-id',
+    consumer: 'projects/your-project-id'
+  }
+}
+Error fetching extractions: Error: 7 PERMISSION_DENIED: Cloud Firestore API has not been used in project your-project-id before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=your-project-id then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.
+    at callErrorFromStatus (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/call.js:32:19)
+    at Object.onReceiveStatus (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/client.js:359:73)
+    at Object.onReceiveStatus (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/client-interceptors.js:324:181)
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/resolving-call.js:135:78
+    at process.processTicksAndRejections (node:internal/process/task_queues:77:11)
+for call at
+    at ServiceClientImpl.makeServerStreamRequest (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/client.js:342:32)
+    at ServiceClientImpl.<anonymous> (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/node_modules/@grpc/grpc-js/build/src/make-client.js:105:19)
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:237:29
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:38:28
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/normalCalls/timeout.js:44:16
+    at Object.request (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/streamingCalls/streaming.js:234:40)
+    at makeRequest (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/retry-request/index.js:159:28)
+    at retryRequest (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/retry-request/index.js:119:5)
+    at StreamProxy.setStream (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/streamingCalls/streaming.js:225:37)
+    at StreamingApiCaller.call (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:54:16)
+Caused by: Error
+    at QueryUtil._getResponse (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/reference/query-util.js:44:23)
+    at CollectionReference._getResponse (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/reference/query.js:784:32)
+    at CollectionReference._get (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/reference/query.js:777:35)
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/reference/query.js:745:43
+    at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@opentelemetry/api/build/src/context/NoopContextManager.js:25:19)
+    at ContextAPI.with (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@opentelemetry/api/build/src/api/context.js:60:46)
+    at NoopTracer.startActiveSpan (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@opentelemetry/api/build/src/trace/NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@opentelemetry/api/build/src/trace/ProxyTracer.js:36:24)
+    at EnabledTraceUtil.startActiveSpan (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28) {
+  code: 7,
+  details: 'Cloud Firestore API has not been used in project your-project-id before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=your-project-id then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.',
+  metadata: Metadata {
+    internalRepr: Map(5) {
+      'google.rpc.errorinfo-bin' => [Array],
+      'google.rpc.help-bin' => [Array],
+      'google.rpc.localizedmessage-bin' => [Array],
+      'grpc-status-details-bin' => [Array],
+      'x-debug-tracking-id' => [Array]
+    },
+    options: {}
+  },
+  statusDetails: [
+    ErrorInfo {
+      metadata: [Object],
+      reason: 'SERVICE_DISABLED',
+      domain: 'googleapis.com'
+    },
+    LocalizedMessage {
+      locale: 'en-US',
+      message: 'Cloud Firestore API has not been used in project your-project-id before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=your-project-id then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.'
+    },
+    Help { links: [Array] }
+  ],
+  reason: 'SERVICE_DISABLED',
+  domain: 'googleapis.com',
+  errorInfoMetadata: {
+    service: 'firestore.googleapis.com',
+    consumer: 'projects/your-project-id',
+    activationUrl: 'https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=your-project-id',
+    containerInfo: 'your-project-id',
+    serviceTitle: 'Cloud Firestore API'
+  }
+}
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node server.js`[39m
+Server running on port 3001
+Using Firestore project: aiva-e74f3
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node server.js`[39m
+Server running on port 3001
+Using Firestore project: aiva-e74f3
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node server.js`[39m
+Server running on port 3001
+Using Firestore project: aiva-e74f3
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node server.js`[39m
+node:internal/modules/cjs/loader:1143
+  throw err;
+  ^
+
+Error: Cannot find module 'dotenv'
+Require stack:
+- /Users/mobionix/workspace/invoice_reconcilation_web/server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1140:15)
+    at Module._load (node:internal/modules/cjs/loader:981:27)
+    at Module.require (node:internal/modules/cjs/loader:1231:19)
+    at require (node:internal/modules/helpers:177:18)
+    at Object.<anonymous> (/Users/mobionix/workspace/invoice_reconcilation_web/server.js:1:1)
+    at Module._compile (node:internal/modules/cjs/loader:1364:14)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1422:10)
+    at Module.load (node:internal/modules/cjs/loader:1203:32)
+    at Module._load (node:internal/modules/cjs/loader:1019:12)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:128:12) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [ '/Users/mobionix/workspace/invoice_reconcilation_web/server.js' ]
+}
+
+Node.js v18.20.5
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node server.js`[39m
+node:internal/modules/cjs/loader:1143
+  throw err;
+  ^
+
+Error: Cannot find module 'dotenv'
+Require stack:
+- /Users/mobionix/workspace/invoice_reconcilation_web/server.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1140:15)
+    at Module._load (node:internal/modules/cjs/loader:981:27)
+    at Module.require (node:internal/modules/cjs/loader:1231:19)
+    at require (node:internal/modules/helpers:177:18)
+    at Object.<anonymous> (/Users/mobionix/workspace/invoice_reconcilation_web/server.js:1:1)
+    at Module._compile (node:internal/modules/cjs/loader:1364:14)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1422:10)
+    at Module.load (node:internal/modules/cjs/loader:1203:32)
+    at Module._load (node:internal/modules/cjs/loader:1019:12)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:128:12) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [ '/Users/mobionix/workspace/invoice_reconcilation_web/server.js' ]
+}
+
+Node.js v18.20.5
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node server.js`[39m
+Server running on port 3001
+Using Firestore project: aiva-e74f3
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node server.js`[39m
+Server running on port 3001
+Using Firestore project: aiva-e74f3
