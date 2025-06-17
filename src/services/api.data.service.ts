@@ -290,3 +290,6 @@ export class ApiDataService {
         return [];
     }
 }
+
+// Export as DataService for backward compatibility
+export const DataService = ApiDataService;

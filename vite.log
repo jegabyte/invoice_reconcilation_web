@@ -61,3 +61,10 @@ Error: connect ECONNREFUSED ::1:3001
 9:19:14 AM [vite] server restarted.
 9:21:59 AM [vite] .env changed, restarting server...
 9:21:59 AM [vite] server restarted.
+9:26:57 AM [vite] page reload src/config/firebase.ts
+9:26:57 AM [vite] page reload src/services/data.service.ts
+9:27:40 AM [vite] .env changed, restarting server...
+Re-optimizing dependencies because lockfile has changed
+9:27:40 AM [vite] server restarted.
+9:28:46 AM [vite] page reload src/vite-env.d.ts
+9:30:45 AM [vite] hmr update /src/styles/globals.css, /src/pages/vendors/VendorsPage.tsx, /src/pages/invoices/InvoiceDetailPage.tsx, /src/pages/invoices/InvoicesPage.tsx, /src/pages/rules/RulesPage.tsx

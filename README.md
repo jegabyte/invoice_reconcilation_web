@@ -25,8 +25,7 @@ A React-based invoice reconciliation system with Google Cloud Firestore backend 
 │   │   └── vendors/            # Vendor management components
 │   ├── config/                 # App configuration
 │   │   ├── app.config.ts       # Main app configuration
-│   │   ├── constants.ts        # App constants and enums
-│   │   └── firebase.ts         # Firebase config (not used with backend)
+│   │   └── constants.ts        # App constants and enums
 │   ├── hooks/                  # Custom React hooks
 │   │   ├── useAuth.ts          # Authentication hook
 │   │   ├── useInvoices.ts      # Invoice data management
@@ -39,8 +38,7 @@ A React-based invoice reconciliation system with Google Cloud Firestore backend 
 │   │   ├── rules/              # Rules management page
 │   │   └── vendors/            # Vendor management pages
 │   ├── services/               # API and data services
-│   │   ├── api/                # REST API client services
-│   │   └── data.service.ts     # Unified data service interface
+│   │   └── api/                # REST API client services
 │   ├── store/                  # Redux store configuration
 │   │   └── slices/             # Redux feature slices
 │   └── types/                  # TypeScript type definitions
@@ -62,7 +60,6 @@ Update the project ID in the `.env` file:
 ```
 # Google Cloud Project Configuration
 GOOGLE_CLOUD_PROJECT=your-project-id
-VITE_FIREBASE_PROJECT_ID=your-project-id
 ```
 
 The backend automatically reads the project ID from the `GOOGLE_CLOUD_PROJECT` environment variable.
@@ -116,7 +113,7 @@ npm start
 
 - Frontend uses Google OAuth for user authentication (configured in .env)
 - Backend uses Google Cloud Application Default Credentials (ADC)
-- No Firebase API keys needed
+- No API keys needed - pure Google Cloud authentication
 
 ### 6. Environment Variables
 
@@ -129,8 +126,8 @@ VITE_GOOGLE_CLIENT_ID=your-oauth-client-id
 # API Configuration  
 VITE_API_BASE_URL=/api  # Points to backend API
 
-# Feature Flags
-VITE_ENABLE_FIREBASE=false  # Must be false to use backend
+# Server Configuration
+PORT=3001  # Backend server port
 ```
 
 ## Data Models
@@ -172,7 +169,9 @@ All API endpoints are prefixed with `/api`:
 
 ## Notes
 
-- The app uses Google Cloud Firestore directly, not Firebase SDK
+- The app uses Google Cloud Firestore directly via backend API
+- No Firebase SDK or API keys required
 - All Firestore timestamps are converted to ISO strings in API responses
 - Frontend proxies API calls through Vite in development
 - No CORS issues as everything runs on same origin in production
+- Use `.env.example` as reference for environment variables
