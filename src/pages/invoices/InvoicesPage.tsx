@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, FileText, Filter, AlertCircle, DollarSign, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
+import { Plus, Search, FileText, Filter, AlertCircle, DollarSign, CheckCircle, Clock } from 'lucide-react';
 import { useInvoices } from '@/hooks/useInvoices';
 import { useVendors } from '@/hooks/useVendors';
 import { LoadingSpinner, Card } from '@/components/common';
@@ -10,7 +10,7 @@ import AddInvoiceModal from './AddInvoiceModal';
 
 export default function InvoicesPage() {
     const navigate = useNavigate();
-    const { extractions, loading, error } = useInvoices();
+    const { invoices, loading, error } = useInvoices();
     const { vendors } = useVendors();
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedVendor, setSelectedVendor] = useState('');
@@ -21,34 +21,43 @@ export default function InvoicesPage() {
     const [dateFrom, setDateFrom] = useState('');
     const [dateTo, setDateTo] = useState('');
 
-    // Filter extractions based on all criteria including date range
-    const filteredExtractions = extractions.filter(extraction => {
-        const matchesSearch = searchTerm === '' ||
-            extraction.invoiceNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            extraction.vendorName.toLowerCase().includes(searchTerm.toLowerCase());
+    // Get vendor name mapping
+    const vendorMap = vendors.reduce((acc, vendor) => {
+        acc[vendor.id!] = vendor.vendorName;
+        return acc;
+    }, {} as Record<string, string>);
 
-        const matchesVendor = selectedVendor === '' || extraction.vendorId === selectedVendor;
-        const matchesStatus = selectedStatus === '' || extraction.status === selectedStatus;
+    // Filter invoices based on all criteria including date range
+    const filteredInvoices = invoices.filter(invoice => {
+        const vendorName = vendorMap[invoice.vendorId] || '';
+        const matchesSearch = searchTerm === '' ||
+            invoice.invoiceId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            vendorName.toLowerCase().includes(searchTerm.toLowerCase());
+
+        const matchesVendor = selectedVendor === '' || invoice.vendorId === selectedVendor;
+        const matchesStatus = selectedStatus === '' || invoice.status === selectedStatus;
 
         // Date filtering - only apply if dates are set
-        const invoiceDate = new Date(extraction.invoiceDate);
-        const matchesDateRange = (!dateFrom || invoiceDate >= new Date(dateFrom)) &&
-            (!dateTo || invoiceDate <= new Date(dateTo));
+        const reconciliationDate = new Date(invoice.reconciliationDate);
+        const matchesDateRange = (!dateFrom || reconciliationDate >= new Date(dateFrom)) &&
+            (!dateTo || reconciliationDate <= new Date(dateTo));
 
         return matchesSearch && matchesVendor && matchesStatus && matchesDateRange;
     });
 
     // Calculate metrics based on filtered data
     const metrics = {
-        totalInvoices: filteredExtractions.length,
-        processed: filteredExtractions.filter(e => e.status === 'COMPLETED').length,
-        pending: filteredExtractions.filter(e => e.status === 'PENDING').length,
-        reviewRequired: filteredExtractions.filter(e => e.status === 'REVIEW_REQUIRED').length,
-        totalAmount: filteredExtractions.reduce((sum, e) => sum + e.totalAmount, 0)
+        totalInvoices: filteredInvoices.length,
+        matched: filteredInvoices.filter(i => i.status === 'MATCHED').length,
+        pending: filteredInvoices.filter(i => i.status === 'PENDING').length,
+        mismatched: filteredInvoices.filter(i => i.status === 'MISMATCHED').length,
+        disputed: filteredInvoices.filter(i => i.status === 'DISPUTED').length,
+        totalAmount: filteredInvoices.reduce((sum, i) => sum + i.totalInvoiceAmount, 0),
+        totalVariance: filteredInvoices.reduce((sum, i) => sum + Math.abs(i.variance), 0)
     };
 
-    const handleViewDetails = (extractionId: string) => {
-        navigate(`/invoices/${extractionId}`);
+    const handleViewDetails = (invoiceId: string) => {
+        navigate(`/invoices/${invoiceId}`);
     };
 
     const handleAddInvoice = async (file: File, vendorId: string, invoiceData: any) => {
@@ -199,8 +208,8 @@ export default function InvoicesPage() {
                 <Card className="p-3">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-xs font-medium text-gray-600">Processed</p>
-                            <p className="mt-0.5 text-xl font-bold text-green-600">{metrics.processed}</p>
+                            <p className="text-xs font-medium text-gray-600">Matched</p>
+                            <p className="mt-0.5 text-xl font-bold text-green-600">{metrics.matched}</p>
                         </div>
                         <CheckCircle className="h-6 w-6 text-green-500" />
                     </div>
@@ -219,10 +228,10 @@ export default function InvoicesPage() {
                 <Card className="p-3">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-xs font-medium text-gray-600">Review Required</p>
-                            <p className="mt-0.5 text-xl font-bold text-yellow-600">{metrics.reviewRequired}</p>
+                            <p className="text-xs font-medium text-gray-600">Mismatched</p>
+                            <p className="mt-0.5 text-xl font-bold text-red-600">{metrics.mismatched}</p>
                         </div>
-                        <AlertTriangle className="h-6 w-6 text-yellow-500" />
+                        <AlertCircle className="h-6 w-6 text-red-500" />
                     </div>
                 </Card>
 
@@ -239,14 +248,14 @@ export default function InvoicesPage() {
                 </Card>
             </div>
 
-            {/* Extractions List */}
+            {/* Reconciliation Summary List */}
             <Card>
                 <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200 text-xs">
                         <thead className="bg-gray-50">
                         <tr>
                             <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Invoice #
+                                Invoice ID
                             </th>
                             <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Vendor
@@ -257,6 +266,9 @@ export default function InvoicesPage() {
                             <th className="px-2 py-1.5 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Amount
                             </th>
+                            <th className="px-2 py-1.5 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Variance
+                            </th>
                             <th className="px-2 py-1.5 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Status
                             </th>
@@ -266,55 +278,73 @@ export default function InvoicesPage() {
                         </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                        {filteredExtractions.length === 0 ? (
+                        {filteredInvoices.length === 0 ? (
                             <tr>
-                                <td colSpan={6} className="px-6 py-4 text-center text-xs text-gray-500">
-                                    No invoices found
+                                <td colSpan={7} className="px-6 py-4 text-center text-xs text-gray-500">
+                                    No reconciliations found
                                 </td>
                             </tr>
                         ) : (
-                            filteredExtractions.map((extraction) => (
-                                <tr key={extraction.id} className="hover:bg-gray-50">
-                                    <td className="px-2 py-1.5 whitespace-nowrap">
-                                        <div className="text-xs font-medium text-gray-900">
-                                            {extraction.invoiceNumber}
-                                        </div>
-                                    </td>
-                                    <td className="px-2 py-1.5 whitespace-nowrap">
-                                        <div className="text-xs text-gray-900 truncate max-w-[150px]" title={extraction.vendorName}>
-                                            {extraction.vendorName}
-                                        </div>
-                                    </td>
-                                    <td className="px-2 py-1.5 whitespace-nowrap hidden md:table-cell">
-                                        <div className="text-xs text-gray-600">
-                                            {new Date(extraction.invoiceDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })}
-                                        </div>
-                                    </td>
-                                    <td className="px-2 py-1.5 whitespace-nowrap text-right">
-                                        <div className="text-xs font-medium text-gray-900">
-                                            {formatCurrency(extraction.totalAmount)}
-                                        </div>
-                                    </td>
-                                    <td className="px-2 py-1.5 whitespace-nowrap text-center">
-                                        <span className={`inline-flex px-1.5 py-0.5 text-xs font-medium rounded ${
-                                            extraction.status === 'COMPLETED' ? 'bg-green-100 text-green-800' :
-                                                extraction.status === 'PENDING' ? 'bg-blue-100 text-blue-800' :
-                                                    extraction.status === 'FAILED' ? 'bg-red-100 text-red-800' :
-                                                        'bg-yellow-100 text-yellow-800'
-                                        }`}>
-                                            {extraction.status === 'REVIEW_REQUIRED' ? 'REVIEW' : extraction.status}
-                                        </span>
-                                    </td>
-                                    <td className="px-2 py-1.5 whitespace-nowrap text-right">
-                                        <button
-                                            onClick={() => handleViewDetails(extraction.id!)}
-                                            className="text-xs text-blue-600 hover:text-blue-900 px-1"
-                                        >
-                                            View Details
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))
+                            filteredInvoices.map((invoice) => {
+                                const vendorName = vendorMap[invoice.vendorId] || 'Unknown Vendor';
+                                return (
+                                    <tr key={invoice.id} className="hover:bg-gray-50">
+                                        <td className="px-2 py-1.5 whitespace-nowrap">
+                                            <div className="text-xs font-medium text-gray-900">
+                                                {invoice.invoiceId}
+                                            </div>
+                                        </td>
+                                        <td className="px-2 py-1.5 whitespace-nowrap">
+                                            <div className="text-xs text-gray-900 truncate max-w-[150px]" title={vendorName}>
+                                                {vendorName}
+                                            </div>
+                                        </td>
+                                        <td className="px-2 py-1.5 whitespace-nowrap hidden md:table-cell">
+                                            <div className="text-xs text-gray-600">
+                                                {new Date(invoice.reconciliationDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })}
+                                            </div>
+                                        </td>
+                                        <td className="px-2 py-1.5 whitespace-nowrap text-right">
+                                            <div className="text-xs font-medium text-gray-900">
+                                                {formatCurrency(invoice.totalInvoiceAmount)}
+                                            </div>
+                                        </td>
+                                        <td className="px-2 py-1.5 whitespace-nowrap text-right">
+                                            <div className={`text-xs font-medium ${
+                                                invoice.variance === 0 ? 'text-green-600' :
+                                                Math.abs(invoice.variance) < 10 ? 'text-yellow-600' :
+                                                'text-red-600'
+                                            }`}>
+                                                {formatCurrency(Math.abs(invoice.variance))}
+                                                {invoice.variancePercentage > 0 && (
+                                                    <span className="text-gray-500 ml-1">
+                                                        ({Math.abs(invoice.variancePercentage).toFixed(1)}%)
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td className="px-2 py-1.5 whitespace-nowrap text-center">
+                                            <span className={`inline-flex px-1.5 py-0.5 text-xs font-medium rounded ${
+                                                invoice.status === 'MATCHED' ? 'bg-green-100 text-green-800' :
+                                                invoice.status === 'PENDING' ? 'bg-blue-100 text-blue-800' :
+                                                invoice.status === 'MISMATCHED' ? 'bg-red-100 text-red-800' :
+                                                invoice.status === 'PARTIAL_MATCH' ? 'bg-yellow-100 text-yellow-800' :
+                                                'bg-gray-100 text-gray-800'
+                                            }`}>
+                                                {invoice.status}
+                                            </span>
+                                        </td>
+                                        <td className="px-2 py-1.5 whitespace-nowrap text-right">
+                                            <button
+                                                onClick={() => handleViewDetails(invoice.id!)}
+                                                className="text-xs text-blue-600 hover:text-blue-900 px-1"
+                                            >
+                                                View Details
+                                            </button>
+                                        </td>
+                                    </tr>
+                                );
+                            })
                         )}
                         </tbody>
                     </table>

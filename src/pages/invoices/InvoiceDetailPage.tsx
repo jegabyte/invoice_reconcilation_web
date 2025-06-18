@@ -4,7 +4,7 @@ import { ArrowLeft, Download } from 'lucide-react';
 import { Card, LoadingSpinner } from '@/components/common';
 import { ApiDataService } from '@/services/api.data.service';
 import { formatCurrency, formatDate } from '@/utils/formatters';
-import { ExtractionResult, InvoiceReconciliationSummary, ReconciliationStatus } from '@/types/api.types';
+import { InvoiceReconciliationSummary, ReconciliationStatus, VendorConfiguration } from '@/types/api.types';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -12,8 +12,8 @@ export default function InvoiceDetailPage() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     
-    const [extraction, setExtraction] = useState<ExtractionResult | null>(null);
     const [summary, setSummary] = useState<InvoiceReconciliationSummary | null>(null);
+    const [vendor, setVendor] = useState<VendorConfiguration | null>(null);
     const [status, setStatus] = useState<ReconciliationStatus | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -29,19 +29,18 @@ export default function InvoiceDetailPage() {
         try {
             setLoading(true);
             
-            // Load extraction result
-            const extractionData = await ApiDataService.getExtractionResult(id);
-            setExtraction(extractionData);
+            // Load reconciliation summary
+            const summaryData = await ApiDataService.getReconciliationSummary(id);
+            setSummary(summaryData);
             
-            // Try to load reconciliation summary if exists
-            const summaries = await ApiDataService.getReconciliationSummaries({ 
-                vendorId: extractionData?.vendorId 
-            });
-            const relatedSummary = summaries.find(s => s.invoiceId === id);
-            setSummary(relatedSummary || null);
+            // Load vendor information if summary exists
+            if (summaryData?.vendorId) {
+                const vendorData = await ApiDataService.getVendor(summaryData.vendorId);
+                setVendor(vendorData);
+            }
             
             // Load reconciliation status
-            const statusData = await ApiDataService.getReconciliationStatus(id);
+            const statusData = await ApiDataService.getReconciliationStatus(summaryData?.invoiceId || id);
             setStatus(statusData);
         } catch (error) {
             console.error('Error loading invoice data:', error);
@@ -58,10 +57,10 @@ export default function InvoiceDetailPage() {
         );
     }
 
-    if (!extraction) {
+    if (!summary) {
         return (
             <div className="text-center py-12">
-                <p className="text-gray-500">Invoice not found</p>
+                <p className="text-gray-500">Reconciliation not found</p>
                 <button
                     onClick={() => navigate('/invoices')}
                     className="mt-4 text-blue-600 hover:text-blue-800"
@@ -90,17 +89,20 @@ export default function InvoiceDetailPage() {
         return summary.status;
     };
 
-    // Get invoice recommendation
+    // Get invoice recommendation based on reconciliation status
     const getInvoiceRecommendation = () => {
-        if (!extraction.extractedData.headerInfo.recommendation) return 'No recommendation available';
-        return extraction.extractedData.headerInfo.recommendation;
+        if (!summary) return 'No recommendation available';
+        if (summary.status === 'MATCHED' && summary.variance === 0) return 'Approve for payment';
+        if (summary.status === 'MISMATCHED' || summary.status === 'DISPUTED') return 'Review required';
+        if (Math.abs(summary.variancePercentage) < 1) return 'Minor variance - review optional';
+        return 'Manual review recommended';
     };
 
     // Download PDF functionality
     const handleDownloadPDF = () => {
         try {
-            if (!extraction) {
-                console.error('No extraction data available');
+            if (!summary || !vendor) {
+                console.error('No reconciliation data available');
                 return;
             }
             
@@ -108,47 +110,49 @@ export default function InvoiceDetailPage() {
         
         // Header
         doc.setFontSize(20);
-        doc.text(`Invoice #${extraction.invoiceNumber}`, 20, 20);
+        doc.text(`Invoice #${summary.invoiceId}`, 20, 20);
         doc.setFontSize(12);
-        doc.text(extraction.vendorName, 20, 30);
+        doc.text(vendor.vendorName, 20, 30);
         
         // Invoice Information
         doc.setFontSize(14);
-        doc.text('Invoice Information', 20, 45);
+        doc.text('Reconciliation Summary', 20, 45);
         doc.setFontSize(10);
-        doc.text(`Invoice Number: ${extraction.invoiceNumber}`, 20, 55);
-        doc.text(`Invoice Date: ${formatDate(new Date(extraction.invoiceDate))}`, 20, 62);
-        doc.text(`Due Date: ${extraction.dueDate ? formatDate(new Date(extraction.dueDate)) : 'N/A'}`, 20, 69);
-        doc.text(`Currency: ${extraction.currency}`, 20, 76);
-        doc.text(`Total Amount: ${formatCurrency(extraction.totalAmount)}`, 20, 83);
+        doc.text(`Invoice ID: ${summary.invoiceId}`, 20, 55);
+        doc.text(`Reconciliation Date: ${formatDate(new Date(summary.reconciliationDate))}`, 20, 62);
+        doc.text(`Total Invoice Amount: ${formatCurrency(summary.totalInvoiceAmount)}`, 20, 69);
+        doc.text(`Total Reconciled Amount: ${formatCurrency(summary.totalReconciledAmount)}`, 20, 76);
+        doc.text(`Variance: ${formatCurrency(Math.abs(summary.variance))} (${Math.abs(summary.variancePercentage).toFixed(2)}%)`, 20, 83);
         doc.text(`Processing Status: ${getProcessingStatus()}`, 20, 90);
         
         // Reconciliation Outcome
         doc.setFontSize(14);
         doc.text('Reconciliation Outcome', 20, 105);
         doc.setFontSize(10);
-        doc.text(`Outcome: ${getReconciliationOutcome()}`, 20, 115);
+        doc.text(`Status: ${getReconciliationOutcome()}`, 20, 115);
         doc.text(`Recommendation: ${getInvoiceRecommendation()}`, 20, 122);
+        doc.text(`Approval Status: ${summary.approvalStatus}`, 20, 129);
         
-        // Line Items Table
-        const lineItemsData = extraction.extractedData.lineItems.map(item => [
-            item.bookingReference || '-',
-            formatCurrency(item.amount),
-            item.metadata?.status || '-',
-            item.metadata?.dispute_type || '-',
-            item.metadata?.warnings_count || '0'
-        ]);
-        
-        autoTable(doc, {
-            startY: 135,
-            head: [['Booking ID', 'Invoice Amount', 'Status', 'Dispute Type', 'Warnings']],
-            body: lineItemsData,
-            theme: 'striped',
-            headStyles: { fillColor: [66, 139, 202] }
-        });
+        // Issues Table
+        if (summary.issues && summary.issues.length > 0) {
+            const issuesData = summary.issues.map(issue => [
+                issue.type,
+                issue.severity,
+                issue.description,
+                issue.variance ? formatCurrency(issue.variance) : '-'
+            ]);
+            
+            autoTable(doc, {
+                startY: 140,
+                head: [['Issue Type', 'Severity', 'Description', 'Variance']],
+                body: issuesData,
+                theme: 'striped',
+                headStyles: { fillColor: [66, 139, 202] }
+            });
+        }
         
         // Save the PDF
-        doc.save(`invoice_${extraction.invoiceNumber}.pdf`);
+        doc.save(`reconciliation_${summary.invoiceId}.pdf`);
         } catch (error) {
             console.error('Error generating PDF:', error);
             alert('Failed to generate PDF. Please check the console for details.');
@@ -168,10 +172,10 @@ export default function InvoiceDetailPage() {
                     </button>
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900">
-                            Invoice #{extraction.invoiceNumber}
+                            Invoice #{summary.invoiceId}
                         </h1>
                         <p className="text-sm text-gray-500">
-                            {extraction.vendorName}
+                            {vendor?.vendorName || 'Unknown Vendor'}
                         </p>
                     </div>
                 </div>
@@ -187,37 +191,44 @@ export default function InvoiceDetailPage() {
                 </div>
             </div>
 
-            {/* Invoice Information */}
+            {/* Reconciliation Information */}
             <Card>
                 <div className="p-6">
-                    <h2 className="text-lg font-medium text-gray-900 mb-4">Invoice Information</h2>
+                    <h2 className="text-lg font-medium text-gray-900 mb-4">Reconciliation Information</h2>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                         <div>
-                            <p className="text-sm font-medium text-gray-500">Invoice Number</p>
-                            <p className="mt-1 text-sm text-gray-900">{extraction.invoiceNumber}</p>
+                            <p className="text-sm font-medium text-gray-500">Invoice ID</p>
+                            <p className="mt-1 text-sm text-gray-900">{summary.invoiceId}</p>
                         </div>
                         <div>
-                            <p className="text-sm font-medium text-gray-500">Invoice Date</p>
+                            <p className="text-sm font-medium text-gray-500">Reconciliation Date</p>
                             <p className="mt-1 text-sm text-gray-900">
-                                {formatDate(new Date(extraction.invoiceDate))}
+                                {formatDate(new Date(summary.reconciliationDate))}
                             </p>
                         </div>
-                        {extraction.dueDate && (
-                            <div>
-                                <p className="text-sm font-medium text-gray-500">Due Date</p>
-                                <p className="mt-1 text-sm text-gray-900">
-                                    {formatDate(new Date(extraction.dueDate))}
-                                </p>
-                            </div>
-                        )}
                         <div>
-                            <p className="text-sm font-medium text-gray-500">Currency</p>
-                            <p className="mt-1 text-sm text-gray-900">{extraction.currency}</p>
+                            <p className="text-sm font-medium text-gray-500">Total Invoice Amount</p>
+                            <p className="mt-1 text-sm font-semibold text-gray-900">
+                                {formatCurrency(summary.totalInvoiceAmount)}
+                            </p>
                         </div>
                         <div>
-                            <p className="text-sm font-medium text-gray-500">Total Amount</p>
+                            <p className="text-sm font-medium text-gray-500">Total Reconciled Amount</p>
                             <p className="mt-1 text-sm font-semibold text-gray-900">
-                                {formatCurrency(extraction.totalAmount)}
+                                {formatCurrency(summary.totalReconciledAmount)}
+                            </p>
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium text-gray-500">Variance</p>
+                            <p className={`mt-1 text-sm font-semibold ${
+                                summary.variance === 0 ? 'text-green-600' :
+                                Math.abs(summary.variance) < 10 ? 'text-yellow-600' :
+                                'text-red-600'
+                            }`}>
+                                {formatCurrency(Math.abs(summary.variance))}
+                                <span className="text-gray-500 ml-1">
+                                    ({Math.abs(summary.variancePercentage).toFixed(2)}%)
+                                </span>
                             </p>
                         </div>
                         <div>
@@ -227,9 +238,21 @@ export default function InvoiceDetailPage() {
                             </p>
                         </div>
                         <div>
-                            <p className="text-sm font-medium text-gray-500">Created At</p>
+                            <p className="text-sm font-medium text-gray-500">Line Items</p>
                             <p className="mt-1 text-sm text-gray-900">
-                                {formatDate(new Date(extraction.createdAt))}
+                                {summary.matchedLineItems}/{summary.totalLineItems} matched
+                            </p>
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium text-gray-500">Approval Status</p>
+                            <p className="mt-1">
+                                <span className={`inline-flex px-2 py-1 text-xs font-medium rounded ${
+                                    summary.approvalStatus === 'APPROVED' ? 'bg-green-100 text-green-800' :
+                                    summary.approvalStatus === 'REJECTED' ? 'bg-red-100 text-red-800' :
+                                    'bg-yellow-100 text-yellow-800'
+                                }`}>
+                                    {summary.approvalStatus}
+                                </span>
                             </p>
                         </div>
                     </div>
@@ -265,81 +288,70 @@ export default function InvoiceDetailPage() {
                 </div>
             </Card>
 
-            {/* Line Items */}
-            <Card>
-                <div className="p-6">
-                    <h2 className="text-lg font-medium text-gray-900 mb-4">Line Items</h2>
-                    <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Booking ID
-                                    </th>
-                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Invoice Amount
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Status
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Dispute Type
-                                    </th>
-                                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Warnings Count
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                                {extraction.extractedData.lineItems.map((item, index) => (
-                                    <tr key={index}>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {item.bookingReference || '-'}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-right">
-                                            {formatCurrency(item.amount)}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                                item.metadata?.status === 'MATCHED' 
-                                                    ? 'bg-green-100 text-green-800'
-                                                    : item.metadata?.status === 'DISPUTED'
+            {/* Reconciliation Issues */}
+            {summary.issues && summary.issues.length > 0 && (
+                <Card>
+                    <div className="p-6">
+                        <h2 className="text-lg font-medium text-gray-900 mb-4">Reconciliation Issues</h2>
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Type
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Severity
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Description
+                                        </th>
+                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Variance
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {summary.issues.map((issue, index) => (
+                                        <tr key={index}>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                {issue.type.replace(/_/g, ' ')}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                                    issue.severity === 'HIGH' 
                                                     ? 'bg-red-100 text-red-800'
-                                                    : 'bg-gray-100 text-gray-800'
-                                            }`}>
-                                                {item.metadata?.status || 'PENDING'}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {item.metadata?.dispute_type || '-'}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                                (item.metadata?.warnings_count || 0) > 0
+                                                    : issue.severity === 'MEDIUM'
                                                     ? 'bg-yellow-100 text-yellow-800'
                                                     : 'bg-gray-100 text-gray-800'
                                             }`}>
-                                                {item.metadata?.warnings_count || 0}
+                                                {issue.severity}
                                             </span>
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-gray-900">
+                                            {issue.description}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
+                                            {issue.variance ? formatCurrency(Math.abs(issue.variance)) : '-'}
                                         </td>
                                     </tr>
                                 ))}
                             </tbody>
-                            <tfoot className="bg-gray-50">
-                                <tr>
-                                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                                        Total
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 text-right">
-                                        {formatCurrency(extraction.totalAmount)}
-                                    </td>
-                                    <td colSpan={3}></td>
-                                </tr>
-                            </tfoot>
                         </table>
                     </div>
                 </div>
             </Card>
+            )}
+            
+            {/* Notes */}
+            {summary.notes && (
+                <Card>
+                    <div className="p-6">
+                        <h2 className="text-lg font-medium text-gray-900 mb-4">Notes</h2>
+                        <p className="text-sm text-gray-700">{summary.notes}</p>
+                    </div>
+                </Card>
+            )}
         </div>
     );
 }

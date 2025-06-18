@@ -68,3 +68,147 @@ Re-optimizing dependencies because lockfile has changed
 9:27:40 AM [vite] server restarted.
 9:28:46 AM [vite] page reload src/vite-env.d.ts
 9:30:45 AM [vite] hmr update /src/styles/globals.css, /src/pages/vendors/VendorsPage.tsx, /src/pages/invoices/InvoiceDetailPage.tsx, /src/pages/invoices/InvoicesPage.tsx, /src/pages/rules/RulesPage.tsx
+11:38:43 PM [vite] hmr update /src/styles/globals.css, /src/pages/invoices/InvoicesPage.tsx
+11:41:24 PM [vite] hmr update /src/styles/globals.css, /src/pages/vendors/VendorsPage.tsx, /src/pages/invoices/InvoiceDetailPage.tsx, /src/pages/invoices/InvoicesPage.tsx, /src/pages/rules/RulesPage.tsx
+11:41:51 PM [vite] hmr update /src/pages/invoices/InvoicesPage.tsx, /src/styles/globals.css
+11:42:26 PM [vite] hmr update /src/styles/globals.css, /src/pages/invoices/InvoicesPage.tsx, /src/pages/vendors/VendorsPage.tsx, /src/pages/rules/RulesPage.tsx, /src/pages/vendors/AddVendorModal.tsx, /src/pages/invoices/InvoiceDetailPage.tsx
+11:42:46 PM [vite] hmr update /src/pages/invoices/InvoicesPage.tsx, /src/styles/globals.css
+11:43:29 PM [vite] hmr update /src/pages/invoices/InvoicesPage.tsx, /src/styles/globals.css
+11:43:37 PM [vite] hmr update /src/pages/invoices/InvoicesPage.tsx, /src/styles/globals.css
+11:45:01 PM [vite] hmr update /src/pages/invoices/InvoiceDetailPage.tsx, /src/styles/globals.css
+11:45:44 PM [vite] hmr update /src/pages/invoices/InvoiceDetailPage.tsx, /src/styles/globals.css
+11:46:50 PM [vite] hmr update /src/pages/invoices/InvoiceDetailPage.tsx, /src/styles/globals.css
+11:46:50 PM [vite] Internal server error: /Users/mobionix/workspace/invoice_reconcilation_web/src/pages/invoices/InvoiceDetailPage.tsx: Adjacent JSX elements must be wrapped in an enclosing tag. Did you want a JSX fragment <>...</>? (361:8)
+
+  359 |                 </div>
+  360 |             </Card>
+> 361 |         </div>
+      |         ^
+  362 |     );
+  363 | }
+  Plugin: vite:react-babel
+  File: /Users/mobionix/workspace/invoice_reconcilation_web/src/pages/invoices/InvoiceDetailPage.tsx:361:8
+  359|                  </div>
+  360|              </Card>
+  361|          </div>
+     |          ^
+  362|      );
+  363|  }
+      at constructor (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:363:19)
+      at TypeScriptParserMixin.raise (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:6609:19)
+      at TypeScriptParserMixin.jsxParseElementAt (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:4754:18)
+      at TypeScriptParserMixin.jsxParseElement (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:4761:17)
+      at TypeScriptParserMixin.parseExprAtom (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:4771:19)
+      at TypeScriptParserMixin.parseExprSubscripts (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:11012:23)
+      at TypeScriptParserMixin.parseUpdate (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10997:21)
+      at TypeScriptParserMixin.parseMaybeUnary (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10977:23)
+      at TypeScriptParserMixin.parseMaybeUnary (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:9794:18)
+      at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10830:61)
+      at TypeScriptParserMixin.parseExprOps (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10835:23)
+      at TypeScriptParserMixin.parseMaybeConditional (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10812:23)
+      at TypeScriptParserMixin.parseMaybeAssign (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10765:21)
+      at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:9732:39
+      at TypeScriptParserMixin.tryParse (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:6918:20)
+      at TypeScriptParserMixin.parseMaybeAssign (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:9732:18)
+      at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10734:39
+      at TypeScriptParserMixin.allowInAnd (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:12361:12)
+      at TypeScriptParserMixin.parseMaybeAssignAllowIn (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10734:17)
+      at TypeScriptParserMixin.parseParenAndDistinguishExpression (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:11608:28)
+      at TypeScriptParserMixin.parseExprAtom (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:11262:23)
+      at TypeScriptParserMixin.parseExprAtom (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:4776:20)
+      at TypeScriptParserMixin.parseExprSubscripts (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:11012:23)
+      at TypeScriptParserMixin.parseUpdate (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10997:21)
+      at TypeScriptParserMixin.parseMaybeUnary (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10977:23)
+      at TypeScriptParserMixin.parseMaybeUnary (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:9794:18)
+      at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10830:61)
+      at TypeScriptParserMixin.parseExprOpBaseRightExpr (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10917:34)
+      at TypeScriptParserMixin.parseExprOpRightExpr (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10912:21)
+      at TypeScriptParserMixin.parseExprOp (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10878:27)
+      at TypeScriptParserMixin.parseExprOp (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:9335:18)
+      at TypeScriptParserMixin.parseExprOp (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10884:21)
+      at TypeScriptParserMixin.parseExprOp (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:9335:18)
+      at TypeScriptParserMixin.parseExprOps (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10839:17)
+      at TypeScriptParserMixin.parseMaybeConditional (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10812:23)
+      at TypeScriptParserMixin.parseMaybeAssign (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10765:21)
+      at TypeScriptParserMixin.parseMaybeAssign (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:9743:20)
+      at TypeScriptParserMixin.parseExpressionBase (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10718:23)
+      at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10714:39
+      at TypeScriptParserMixin.allowInAnd (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:12361:12)
+      at TypeScriptParserMixin.parseExpression (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10714:17)
+      at TypeScriptParserMixin.jsxParseExpressionContainer (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:4644:31)
+      at TypeScriptParserMixin.jsxParseElementAt (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:4723:36)
+      at TypeScriptParserMixin.jsxParseElement (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:4761:17)
+      at TypeScriptParserMixin.parseExprAtom (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:4771:19)
+      at TypeScriptParserMixin.parseExprSubscripts (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:11012:23)
+      at TypeScriptParserMixin.parseUpdate (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10997:21)
+      at TypeScriptParserMixin.parseMaybeUnary (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10977:23)
+      at TypeScriptParserMixin.parseMaybeUnary (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:9794:18)
+      at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10830:61)
+11:47:20 PM [vite] hmr update /src/pages/invoices/InvoiceDetailPage.tsx, /src/styles/globals.css
+11:47:20 PM [vite] Internal server error: /Users/mobionix/workspace/invoice_reconcilation_web/src/pages/invoices/InvoiceDetailPage.tsx: Adjacent JSX elements must be wrapped in an enclosing tag. Did you want a JSX fragment <>...</>? (344:8)
+
+  342 |                 </div>
+  343 |             </Card>
+> 344 |         </div>
+      |         ^
+  345 |     );
+  346 | }
+  Plugin: vite:react-babel
+  File: /Users/mobionix/workspace/invoice_reconcilation_web/src/pages/invoices/InvoiceDetailPage.tsx:344:8
+  342|                  </div>
+  343|              </Card>
+  344|          </div>
+     |          ^
+  345|      );
+  346|  }
+      at constructor (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:363:19)
+      at TypeScriptParserMixin.raise (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:6609:19)
+      at TypeScriptParserMixin.jsxParseElementAt (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:4754:18)
+      at TypeScriptParserMixin.jsxParseElement (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:4761:17)
+      at TypeScriptParserMixin.parseExprAtom (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:4771:19)
+      at TypeScriptParserMixin.parseExprSubscripts (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:11012:23)
+      at TypeScriptParserMixin.parseUpdate (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10997:21)
+      at TypeScriptParserMixin.parseMaybeUnary (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10977:23)
+      at TypeScriptParserMixin.parseMaybeUnary (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:9794:18)
+      at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10830:61)
+      at TypeScriptParserMixin.parseExprOps (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10835:23)
+      at TypeScriptParserMixin.parseMaybeConditional (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10812:23)
+      at TypeScriptParserMixin.parseMaybeAssign (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10765:21)
+      at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:9732:39
+      at TypeScriptParserMixin.tryParse (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:6918:20)
+      at TypeScriptParserMixin.parseMaybeAssign (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:9732:18)
+      at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10734:39
+      at TypeScriptParserMixin.allowInAnd (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:12361:12)
+      at TypeScriptParserMixin.parseMaybeAssignAllowIn (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10734:17)
+      at TypeScriptParserMixin.parseParenAndDistinguishExpression (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:11608:28)
+      at TypeScriptParserMixin.parseExprAtom (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:11262:23)
+      at TypeScriptParserMixin.parseExprAtom (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:4776:20)
+      at TypeScriptParserMixin.parseExprSubscripts (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:11012:23)
+      at TypeScriptParserMixin.parseUpdate (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10997:21)
+      at TypeScriptParserMixin.parseMaybeUnary (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10977:23)
+      at TypeScriptParserMixin.parseMaybeUnary (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:9794:18)
+      at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10830:61)
+      at TypeScriptParserMixin.parseExprOpBaseRightExpr (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10917:34)
+      at TypeScriptParserMixin.parseExprOpRightExpr (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10912:21)
+      at TypeScriptParserMixin.parseExprOp (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10878:27)
+      at TypeScriptParserMixin.parseExprOp (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:9335:18)
+      at TypeScriptParserMixin.parseExprOp (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10884:21)
+      at TypeScriptParserMixin.parseExprOp (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:9335:18)
+      at TypeScriptParserMixin.parseExprOps (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10839:17)
+      at TypeScriptParserMixin.parseMaybeConditional (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10812:23)
+      at TypeScriptParserMixin.parseMaybeAssign (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10765:21)
+      at TypeScriptParserMixin.parseMaybeAssign (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:9743:20)
+      at TypeScriptParserMixin.parseExpressionBase (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10718:23)
+      at /Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10714:39
+      at TypeScriptParserMixin.allowInAnd (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:12361:12)
+      at TypeScriptParserMixin.parseExpression (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10714:17)
+      at TypeScriptParserMixin.jsxParseExpressionContainer (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:4644:31)
+      at TypeScriptParserMixin.jsxParseElementAt (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:4723:36)
+      at TypeScriptParserMixin.jsxParseElement (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:4761:17)
+      at TypeScriptParserMixin.parseExprAtom (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:4771:19)
+      at TypeScriptParserMixin.parseExprSubscripts (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:11012:23)
+      at TypeScriptParserMixin.parseUpdate (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10997:21)
+      at TypeScriptParserMixin.parseMaybeUnary (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10977:23)
+      at TypeScriptParserMixin.parseMaybeUnary (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:9794:18)
+      at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/mobionix/workspace/invoice_reconcilation_web/node_modules/@babel/parser/lib/index.js:10830:61)
+11:47:33 PM [vite] hmr update /src/pages/invoices/InvoiceDetailPage.tsx, /src/styles/globals.css

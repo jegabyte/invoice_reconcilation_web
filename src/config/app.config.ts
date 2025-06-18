@@ -138,9 +138,10 @@ export const APP_CONFIG = {
       status: [
         { value: '', label: 'All Status' },
         { value: 'PENDING', label: 'Pending' },
-        { value: 'COMPLETED', label: 'Completed' },
-        { value: 'FAILED', label: 'Failed' },
-        { value: 'REVIEW_REQUIRED', label: 'Review Required' },
+        { value: 'MATCHED', label: 'Matched' },
+        { value: 'MISMATCHED', label: 'Mismatched' },
+        { value: 'PARTIAL_MATCH', label: 'Partial Match' },
+        { value: 'DISPUTED', label: 'Disputed' },
       ],
     },
 

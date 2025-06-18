@@ -1,10 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ExtractionResult, InvoiceReconciliationSummary, ReconciliationStatus } from '@/types/api.types';
+import { InvoiceReconciliationSummary, ReconciliationStatus } from '@/types/api.types';
 import { ApiDataService } from '@/services/api.data.service';
 
 interface UseInvoicesReturn {
-    extractions: ExtractionResult[];
-    summaries: InvoiceReconciliationSummary[];
+    invoices: InvoiceReconciliationSummary[];
     statuses: ReconciliationStatus[];
     loading: boolean;
     error: Error | null;
@@ -12,8 +11,7 @@ interface UseInvoicesReturn {
 }
 
 export function useInvoices(): UseInvoicesReturn {
-    const [extractions, setExtractions] = useState<ExtractionResult[]>([]);
-    const [summaries, setSummaries] = useState<InvoiceReconciliationSummary[]>([]);
+    const [invoices, setInvoices] = useState<InvoiceReconciliationSummary[]>([]);
     const [statuses, setStatuses] = useState<ReconciliationStatus[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
@@ -23,14 +21,12 @@ export function useInvoices(): UseInvoicesReturn {
             setLoading(true);
             setError(null);
 
-            const [extractionResults, reconciliationSummaries, reconciliationStatuses] = await Promise.all([
-                ApiDataService.getExtractionResults(),
+            const [reconciliationSummaries, reconciliationStatuses] = await Promise.all([
                 ApiDataService.getReconciliationSummaries(),
                 ApiDataService.getReconciliationStatuses()
             ]);
 
-            setExtractions(extractionResults);
-            setSummaries(reconciliationSummaries);
+            setInvoices(reconciliationSummaries);
             setStatuses(reconciliationStatuses);
         } catch (err) {
             setError(err as Error);
@@ -44,19 +40,18 @@ export function useInvoices(): UseInvoicesReturn {
         loadData();
 
         // Subscribe to real-time updates
-        const unsubscribeExtractions = ApiDataService.subscribeToExtractionResults(
-            (data) => setExtractions(data),
+        const unsubscribeReconciliations = ApiDataService.subscribeToReconciliationSummaries(
+            (data) => setInvoices(data),
             {}
         );
 
         return () => {
-            unsubscribeExtractions();
+            unsubscribeReconciliations();
         };
-    }, []);
+    }, [loadData]);
 
     return {
-        extractions,
-        summaries,
+        invoices,
         statuses,
         loading,
         error,

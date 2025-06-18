@@ -254,6 +254,17 @@ export class ApiDataService {
         return () => {};
     }
     
+    static subscribeToReconciliationSummaries(
+        callback: (summaries: InvoiceReconciliationSummary[]) => void,
+        filters?: { vendorId?: string; status?: string }
+    ): () => void {
+        // Initial load
+        this.getReconciliationSummaries(filters).then(callback).catch(console.error);
+        
+        // Return no-op unsubscribe
+        return () => {};
+    }
+    
     static subscribeToReconciliationStatus(
         invoiceId: string,
         callback: (status: ReconciliationStatus | null) => void

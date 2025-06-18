@@ -175,3 +175,7 @@ All API endpoints are prefixed with `/api`:
 - Frontend proxies API calls through Vite in development
 - No CORS issues as everything runs on same origin in production
 - Use `.env.example` as reference for environment variables
+
+## Field Mapping and Updates
+
+For detailed instructions on how to update field mappings when Firestore collections change or when you need to modify UI fields, see [FIELD_MAPPING_GUIDE.md](./FIELD_MAPPING_GUIDE.md).
