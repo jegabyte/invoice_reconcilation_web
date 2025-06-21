@@ -4,12 +4,11 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Build output (we'll build in Docker)
+# Build output
 dist
 
 # Environment files
 .env*
-!.env.example
 
 # Git
 .git
@@ -21,7 +20,6 @@ dist
 
 # Documentation
 *.md
-!README.md
 
 # OS
 .DS_Store
@@ -35,29 +33,3 @@ coverage
 .gcloudignore
 app.yaml
 deploy.sh
-
-# Logs
-*.log
-server.log
-nextjs.log
-
-# Temp files
-temp
-tmp
-.cache
-
-# Backup and migration files
-*.backup
-NEXTJS_MIGRATION.md
-app/
-middleware.ts
-next-env.d.ts
-next.config.js
-tsconfig.json.nextjs
-package.json.nextjs
-Dockerfile.nextjs
-server-unified.js
-start-dev.js
-migrate-to-nextjs.sh
-fetch-firestore-samples.js
-.next/

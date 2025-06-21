@@ -1,16 +1,13 @@
 // Load environment variables from .env.local first, then .env
 const dotenv = require('dotenv');
 
-// Only load env files in development
-if (process.env.NODE_ENV !== 'production') {
-  // Load .env.local first (higher priority)
-  const localEnvResult = dotenv.config({ path: '.env.local' });
-  console.log('.env.local loaded:', localEnvResult.error ? 'Failed' : 'Success');
+// Load .env.local first (higher priority)
+const localEnvResult = dotenv.config({ path: '.env.local' });
+console.log('.env.local loaded:', localEnvResult.error ? 'Failed' : 'Success');
 
-  // Then load .env (lower priority, won't override existing vars)
-  const envResult = dotenv.config();
-  console.log('.env loaded:', envResult.error ? 'Failed' : 'Success');
-}
+// Then load .env (lower priority, won't override existing vars)
+const envResult = dotenv.config();
+console.log('.env loaded:', envResult.error ? 'Failed' : 'Success');
 
 // Debug: Log important environment variables
 console.log('Environment variables loaded:');

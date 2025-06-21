@@ -1,30 +1,56 @@
 # This file specifies files that are *not* uploaded to Google Cloud
+# using gcloud. It follows the same syntax as .gitignore, with the addition of
+# "#!include" directives (which insert the entries of the given .gitignore-style
+# file at that point).
 
 .gcloudignore
 .git
 .gitignore
 
-# Node.js dependencies (will be installed during build)
+# Node.js dependencies
 node_modules/
 
-# Environment files
-.env
-.env.*
+# Build files
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Development files
+src/
+public/
+*.ts
+*.tsx
+tsconfig.json
+vite.config.ts
+tailwind.config.js
+postcss.config.js
+index.html
+package.json
+package-lock.json
+app-engine-package.json
+deploy.sh
+
+# Local env files
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
 # IDE
 .vscode/
 .idea/
+*.swp
+*.swo
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Logs
-*.log
-
 # Documentation
+README.md
+CLAUDE.md
 *.md
-!README.md
 
 # Tests
 __tests__/
@@ -32,27 +58,3 @@ __tests__/
 *.test.ts
 *.spec.js
 *.spec.ts
-
-# Temporary and backup files
-*.backup
-*.bak
-.next/
-app/
-middleware.ts
-next-env.d.ts
-next.config.js
-tsconfig.json.nextjs
-package.json.nextjs
-Dockerfile.nextjs
-server-unified.js
-start-dev.js
-migrate-to-nextjs.sh
-fetch-firestore-samples.js
-
-# Deployment scripts
-deploy*.sh
-update-env.sh
-test-deploy.sh
-
-# Build output (will be built in Cloud)
-# dist/
