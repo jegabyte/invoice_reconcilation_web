@@ -1,31 +1,29 @@
-# Build stage
-FROM node:20-alpine as builder
+# Use the official Node.js image
+FROM node:20-alpine
 
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
+# Install all dependencies (needed for build)
 RUN npm ci
 
-# Copy source code
+# Copy all source files
 COPY . .
 
-# Build the app
+# Build the React app
 RUN npm run build
 
-# Production stage
-FROM nginx:alpine
+# Remove dev dependencies
+RUN npm prune --production
 
-# Copy built assets from builder stage
-COPY --from=builder /app/dist /usr/share/nginx/html
+# Expose port
+EXPOSE 8080
 
-# Copy nginx configuration for React Router
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Set environment variable
+ENV PORT=8080
+ENV NODE_ENV=production
 
-# Expose port 80
-EXPOSE 80
-
-# Start nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Start the server
+CMD ["node", "server.js"]
