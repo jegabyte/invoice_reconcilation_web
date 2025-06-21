@@ -71,9 +71,23 @@ STORAGE_BUCKET_NAME=your-storage-bucket
 
 # Optional: Firestore database ID (default: '(default)')
 FIRESTORE_DATABASE_ID=(default)
+
+# Optional: BigQuery configuration for invoice summaries
+USE_BIGQUERY_FOR_INVOICES=true
+BIGQUERY_DATASET=recon_summary
+BIGQUERY_TABLE_INVOICE_REVIEW=invoice_review
 ```
 
-### 5. Firestore Collections
+### 5. BigQuery Configuration (Optional)
+
+The invoice summary page can optionally fetch data from BigQuery instead of Firestore for better performance and access to cleaned data:
+
+- Set `USE_BIGQUERY_FOR_INVOICES=true` to enable BigQuery
+- Configure the dataset and table names in environment variables
+- The SQL query can be customized via `BIGQUERY_QUERY_INVOICE_SUMMARIES` environment variable
+- Falls back to Firestore if BigQuery fails or is disabled
+
+### 6. Firestore Collections
 
 The application uses the following Firestore collections (customizable via environment variables):
 

@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, FileText, Filter, AlertCircle, DollarSign, CheckCircle, Clock, RefreshCw } from 'lucide-react';
+import { Plus, Search, FileText, Filter, AlertCircle, CheckCircle, Clock, RefreshCw } from 'lucide-react';
 import { useInvoices } from '@/hooks/useInvoices';
 import { useVendors } from '@/hooks/useVendors';
 import { LoadingSpinner, Card, SuccessNotification, InvoicesShimmer } from '@/components/common';
-import { formatCurrency, formatDate } from '@/utils/formatters';
+import { formatCurrency, formatDate, formatNumber } from '@/utils/formatters';
 import { APP_CONFIG } from '@/config/app.config';
 import AddInvoiceModal from './AddInvoiceModal';
 import { uploadApiService } from '@/services/api/upload.api.service';
@@ -44,7 +44,7 @@ export default function InvoicesPage() {
             (selectedVendor && vendorMap[selectedVendor] && 
              invoiceVendorName.toLowerCase() === vendorMap[selectedVendor].toLowerCase());
         
-        const matchesStatus = selectedStatus === '' || invoice.status === selectedStatus;
+        const matchesStatus = selectedStatus === '' || invoice.invoice_status === selectedStatus;
 
         // Date filtering - only apply if dates are set (filter by invoice date)
         let matchesDateRange = true;
@@ -62,19 +62,24 @@ export default function InvoicesPage() {
         return matchesSearch && matchesVendor && matchesStatus && matchesDateRange;
     });
 
-    // Calculate metrics based on filtered data
+    // Calculate metrics based on filtered data using invoice_status field
     const metrics = {
         totalInvoices: filteredInvoices.length,
         processed: filteredInvoices.filter(i => {
-            const disputeCount = Object.values(i.dispute_type_summary || {}).reduce((a, b) => a + b, 0);
-            const holdCount = i.status_summary?.['HOLD_PENDING_REVIEW'] || 0;
-            return disputeCount === 0 && holdCount === 0;
+            // Count MATCHED and MATCHED_WITH_WARNING as Matched
+            const status = i.invoice_status || '';
+            return status === 'MATCHED' || status === 'MATCHED_WITH_WARNING';
         }).length,
-        onHold: filteredInvoices.reduce((sum, i) => sum + (i.status_summary?.['HOLD_PENDING_REVIEW'] || 0), 0),
-        disputed: filteredInvoices.reduce((sum, i) => {
-            return sum + Object.values(i.dispute_type_summary || {}).reduce((a, b) => a + b, 0);
-        }, 0),
-        totalAmount: filteredInvoices.reduce((sum, i) => sum + (i.total_invoice_amount || 0), 0),
+        onHold: filteredInvoices.filter(i => {
+            // Count HOLD_PENDING_REVIEW and PENDING_REVIEW as Pending Review
+            const status = i.invoice_status || '';
+            return status === 'HOLD_PENDING_REVIEW' || status === 'PENDING_REVIEW';
+        }).length,
+        disputed: filteredInvoices.filter(i => {
+            // Count DISPUTED
+            const status = i.invoice_status || '';
+            return status === 'DISPUTED';
+        }).length,
         totalLineItems: filteredInvoices.reduce((sum, i) => sum + (i.total_line_items || 0), 0)
     };
 
@@ -241,7 +246,7 @@ export default function InvoicesPage() {
             </div>
 
             {/* Summary Cards - Compact Design */}
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <Card className="p-3">
                     <div className="flex items-center justify-between">
                         <div>
@@ -255,7 +260,7 @@ export default function InvoicesPage() {
                 <Card className="p-3">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-xs font-medium text-gray-600">Processed</p>
+                            <p className="text-xs font-medium text-gray-600">Matched</p>
                             <p className="mt-0.5 text-xl font-bold text-green-600">{metrics.processed}</p>
                         </div>
                         <CheckCircle className="h-6 w-6 text-green-500" />
@@ -265,7 +270,7 @@ export default function InvoicesPage() {
                 <Card className="p-3">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-xs font-medium text-gray-600">On Hold</p>
+                            <p className="text-xs font-medium text-gray-600">Pending Review</p>
                             <p className="mt-0.5 text-xl font-bold text-yellow-600">{metrics.onHold}</p>
                         </div>
                         <Clock className="h-6 w-6 text-yellow-500" />
@@ -279,18 +284,6 @@ export default function InvoicesPage() {
                             <p className="mt-0.5 text-xl font-bold text-red-600">{metrics.disputed}</p>
                         </div>
                         <AlertCircle className="h-6 w-6 text-red-500" />
-                    </div>
-                </Card>
-
-                <Card className="p-3">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-xs font-medium text-gray-600">Total Amount</p>
-                            <p className="mt-0.5 text-lg font-bold text-gray-900">
-                                {formatCurrency(metrics.totalAmount)}
-                            </p>
-                        </div>
-                        <DollarSign className="h-6 w-6 text-green-600" />
                     </div>
                 </Card>
             </div>
@@ -313,14 +306,14 @@ export default function InvoicesPage() {
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Invoice Date
                             </th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Payment Due Date
-                            </th>
                             <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Invoice Amount
                             </th>
                             <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Status
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Recommendation
                             </th>
                             <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Actions
@@ -336,17 +329,26 @@ export default function InvoicesPage() {
                             </tr>
                         ) : (
                             filteredInvoices.map((invoice, index) => {
-                                const disputeCount = Object.values(invoice.dispute_type_summary || {}).reduce((a, b) => a + b, 0);
-                                const holdCount = invoice.status_summary?.['HOLD_PENDING_REVIEW'] || 0;
-                                const processedCount = (invoice.total_line_items || 0) - holdCount - disputeCount;
+                                // Use invoice_status field for determining status
+                                const status = invoice.invoice_status || '';
                                 
-                                // Format dates
-                                const invoiceDate = invoice.invoiceDate ? 
-                                    new Date(invoice.invoiceDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 
-                                    '-';
-                                const paymentDueDate = invoice.paymentDueDate ? 
-                                    new Date(invoice.paymentDueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 
-                                    '-';
+                                // Format dates - handle BigQuery date format
+                                const formatBigQueryDate = (dateValue: any) => {
+                                    if (!dateValue) return '-';
+                                    
+                                    // BigQuery returns date as an object with 'value' property
+                                    const dateStr = dateValue.value || dateValue;
+                                    
+                                    try {
+                                        const date = new Date(dateStr);
+                                        if (isNaN(date.getTime())) return '-';
+                                        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                                    } catch (e) {
+                                        return '-';
+                                    }
+                                };
+                                
+                                const invoiceDate = formatBigQueryDate(invoice.invoiceDate || invoice.invoice_date);
                                 
                                 return (
                                     <tr key={invoice.id} className="hover:bg-gray-50 border-b border-gray-200">
@@ -357,7 +359,7 @@ export default function InvoicesPage() {
                                         </td>
                                         <td className="px-4 py-3 whitespace-nowrap">
                                             <div className="text-sm font-medium text-gray-900">
-                                                {invoice.invoiceNumber || '-'}
+                                                {invoice.invoiceNumber || invoice.invoice_number || '-'}
                                             </div>
                                         </td>
                                         <td className="px-4 py-3 whitespace-nowrap">
@@ -370,36 +372,32 @@ export default function InvoicesPage() {
                                                 {invoiceDate}
                                             </div>
                                         </td>
-                                        <td className="px-4 py-3 whitespace-nowrap">
-                                            <div className="text-sm text-gray-600">
-                                                {paymentDueDate}
-                                            </div>
-                                        </td>
                                         <td className="px-4 py-3 whitespace-nowrap text-right">
                                             <div className="text-sm font-medium text-gray-900">
-                                                {invoice.invoiceCurrency && invoice.invoiceCurrency !== 'USD' && (
-                                                    <span className="text-gray-500 mr-1">{invoice.invoiceCurrency}</span>
+                                                {formatNumber(invoice.total_invoice_amount || 0, 2)}
+                                                {invoice.invoiceCurrency && (
+                                                    <span className="text-gray-500 ml-1">{invoice.invoiceCurrency}</span>
                                                 )}
-                                                {formatCurrency(invoice.total_invoice_amount || 0)}
                                             </div>
                                         </td>
                                         <td className="px-4 py-3 whitespace-nowrap text-center">
                                             <div className="flex flex-col items-center space-y-1">
-                                                {holdCount > 0 && (
-                                                    <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">
-                                                        {holdCount} HOLD
-                                                    </span>
-                                                )}
-                                                {disputeCount > 0 && (
-                                                    <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">
-                                                        {disputeCount} DISPUTED
-                                                    </span>
-                                                )}
-                                                {holdCount === 0 && disputeCount === 0 && (
-                                                    <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
-                                                        PROCESSED
-                                                    </span>
-                                                )}
+                                                <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                                                    status === 'MATCHED' || status === 'MATCHED_WITH_WARNING' 
+                                                        ? 'bg-green-100 text-green-800'
+                                                        : status === 'DISPUTED'
+                                                        ? 'bg-red-100 text-red-800'
+                                                        : status === 'HOLD_PENDING_REVIEW' || status === 'PENDING_REVIEW'
+                                                        ? 'bg-yellow-100 text-yellow-800'
+                                                        : 'bg-gray-100 text-gray-800'
+                                                }`}>
+                                                    {status || 'PENDING'}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <div className="text-sm text-gray-900 max-w-[200px]" title={invoice.invoice_recommendation || ''}>
+                                                {invoice.invoice_recommendation || '-'}
                                             </div>
                                         </td>
                                         <td className="px-4 py-3 whitespace-nowrap text-center">

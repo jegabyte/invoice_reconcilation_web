@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { Firestore } = require('@google-cloud/firestore');
 const { reconciliationService, extractionMetadataService, BaseFirestoreService } = require('../services/firestore.service');
+const bigQueryService = require('../services/bigquery.service');
 
 // Helper function to map Firestore data to API format
 function mapFirestoreToApi(firestoreData, extractionMetadata = null) {
@@ -95,9 +96,46 @@ function mapInvoiceStatusToReconciliationStatus(apiStatus) {
   }
 }
 
-// GET all reconciliations
+// GET all reconciliations - Now using BigQuery for invoice summaries
 router.get('/', async (req, res) => {
   try {
+    // Use BigQuery for invoice summaries instead of Firestore
+    const useBigQuery = process.env.USE_BIGQUERY_FOR_INVOICES !== 'false';
+    
+    if (useBigQuery) {
+      try {
+        // Fetch from BigQuery
+        const invoiceSummaries = await bigQueryService.getInvoiceSummaries();
+        
+        // Filter based on query parameters if provided
+        let filtered = invoiceSummaries;
+        
+        if (req.query.vendor_name) {
+          filtered = filtered.filter(inv => 
+            inv.vendor_name?.toLowerCase().includes(req.query.vendor_name.toLowerCase())
+          );
+        }
+        
+        if (req.query.invoice_status) {
+          filtered = filtered.filter(inv => 
+            inv.invoice_status === req.query.invoice_status
+          );
+        }
+        
+        console.log(`Returning ${filtered.length} invoices from BigQuery`);
+        // Debug: Log first invoice to check data structure
+        if (filtered.length > 0) {
+          console.log('First invoice from BigQuery:', JSON.stringify(filtered[0], null, 2));
+        }
+        res.json(filtered);
+        return;
+      } catch (bigQueryError) {
+        console.error('BigQuery error, falling back to Firestore:', bigQueryError);
+        // Fall through to Firestore if BigQuery fails
+      }
+    }
+    
+    // Original Firestore logic as fallback
     const reconciliations = await reconciliationService.getAll(req.query);
     
     // Fetch extraction metadata for all reconciliations

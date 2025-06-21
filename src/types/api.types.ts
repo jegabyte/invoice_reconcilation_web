@@ -67,6 +67,12 @@ export interface InvoiceReconciliationSummary {
     invoiceCurrency?: string;
     paymentDueDate?: string;
     invoiceType?: string;
+    // BigQuery fields
+    invoice_status?: string;
+    invoice_recommendation?: string;
+    invoice_number?: string;
+    invoice_date?: string;
+    payment_due_date?: string;
 }
 
 export interface ReconciliationIssue {
