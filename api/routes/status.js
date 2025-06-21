@@ -50,6 +50,112 @@ router.get('/invoice/:invoiceId', async (req, res) => {
   }
 });
 
+// GET statuses by run ID
+router.get('/run/:runId', async (req, res) => {
+  try {
+    const statuses = await statusService.getAll({ run_id: req.params.runId });
+    const converted = statuses.map(s => {
+      const timestampConverted = BaseFirestoreService.convertTimestamps(s);
+      // Map the reconciliation_status fields to a more frontend-friendly format
+      return {
+        id: timestampConverted.id,
+        reconciliationId: timestampConverted.reconciliation_id,
+        runId: timestampConverted.run_id,
+        extractionId: timestampConverted.extraction_id,
+        vendorName: timestampConverted.vendor_name,
+        invoiceNumber: timestampConverted.invoice_number,
+        bookingId: timestampConverted.booking_id,
+        lineItemId: timestampConverted.line_item_id,
+        hotelName: timestampConverted.hotel_name,
+        status: timestampConverted.status,
+        disputeType: timestampConverted.dispute_type,
+        invoiceData: timestampConverted.invoice_data,
+        omsData: timestampConverted.oms_data,
+        rulesApplied: timestampConverted.rules_applied,
+        statusHistory: timestampConverted.status_history,
+        isCancelledBooking: timestampConverted.is_cancelled_booking,
+        cancellationDate: timestampConverted.cancellation_date,
+        expectedRefundDate: timestampConverted.expected_refund_date,
+        daysInCurrentStatus: timestampConverted.days_in_current_status,
+        createdAt: timestampConverted.created_at,
+        updatedAt: timestampConverted.updated_at
+      };
+    });
+    res.json(converted);
+  } catch (error) {
+    console.error('Error fetching statuses by run ID:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET statuses by extraction ID
+router.get('/extraction/:extractionId', async (req, res) => {
+  try {
+    console.log('=== RECONCILIATION STATUS BY EXTRACTION ID ===');
+    console.log('Fetching statuses for extraction_id:', req.params.extractionId);
+    
+    const statuses = await statusService.getAll({ extraction_id: req.params.extractionId });
+    console.log('Statuses found with extraction_id query:', statuses.length);
+    
+    if (statuses.length === 0) {
+      // Try alternate queries
+      console.log('No statuses found with extraction_id, trying run_id...');
+      
+      // First, let's see what fields are available in a sample document
+      const sampleSnapshot = await statusService.collection.limit(5).get();
+      console.log('Sample reconciliation_status documents:');
+      sampleSnapshot.docs.forEach((doc, index) => {
+        const data = doc.data();
+        console.log(`Document ${index + 1} - ID: ${doc.id}`);
+        console.log(`- extraction_id: ${data.extraction_id}`);
+        console.log(`- run_id: ${data.run_id}`);
+        console.log(`- invoice_id: ${data.invoice_id}`);
+        console.log(`- Keys: ${Object.keys(data).join(', ')}`);
+      });
+    } else {
+      console.log('First status document:', JSON.stringify(statuses[0], null, 2));
+    }
+    
+    const converted = statuses.map(s => {
+      const timestampConverted = BaseFirestoreService.convertTimestamps(s);
+      // Map the reconciliation_status fields to a more frontend-friendly format
+      return {
+        id: timestampConverted.id,
+        reconciliationId: timestampConverted.reconciliation_id,
+        runId: timestampConverted.run_id,
+        extractionId: timestampConverted.extraction_id,
+        vendorName: timestampConverted.vendor_name,
+        invoiceNumber: timestampConverted.invoice_number,
+        bookingId: timestampConverted.booking_id || timestampConverted.booking_id,
+        lineItemId: timestampConverted.line_item_id,
+        hotelName: timestampConverted.hotel_name,
+        status: timestampConverted.status,
+        disputeType: timestampConverted.dispute_type || timestampConverted.dispute_type,
+        invoiceData: timestampConverted.invoice_data,
+        omsData: timestampConverted.oms_data,
+        rulesApplied: timestampConverted.rules_applied || timestampConverted.rules_applied,
+        statusHistory: timestampConverted.status_history,
+        isCancelledBooking: timestampConverted.is_cancelled_booking,
+        cancellationDate: timestampConverted.cancellation_date,
+        expectedRefundDate: timestampConverted.expected_refund_date,
+        daysInCurrentStatus: timestampConverted.days_in_current_status,
+        createdAt: timestampConverted.created_at,
+        updatedAt: timestampConverted.updated_at,
+        // Also include snake_case versions
+        booking_id: timestampConverted.booking_id,
+        hotel_name: timestampConverted.hotel_name,
+        dispute_type: timestampConverted.dispute_type,
+        invoice_data: timestampConverted.invoice_data,
+        rules_applied: timestampConverted.rules_applied
+      };
+    });
+    res.json(converted);
+  } catch (error) {
+    console.error('Error fetching statuses by extraction ID:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // POST create status
 router.post('/', async (req, res) => {
   try {

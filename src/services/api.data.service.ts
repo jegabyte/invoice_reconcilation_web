@@ -194,14 +194,30 @@ export class ApiDataService {
     // RECONCILIATION STATUS
     // ==========================================
     
-    static async getReconciliationStatuses(_filters?: {
+    static async getReconciliationStatuses(filters?: {
         vendorId?: string;
-        currentStage?: string;
-        overallStatus?: string;
+        extractionId?: string;
+        status?: string;
     }): Promise<ReconciliationStatus[]> {
-        // This would need to be implemented with a list endpoint
-        // For now, return empty array
-        return [];
+        // Call the status endpoint to get all statuses
+        const response = await fetch('/api/status');
+        if (!response.ok) {
+            throw new Error(`Failed to fetch statuses: ${response.statusText}`);
+        }
+        let statuses = await response.json();
+        
+        // Apply client-side filtering
+        if (filters?.extractionId) {
+            statuses = statuses.filter((s: ReconciliationStatus) => s.extraction_id === filters.extractionId);
+        }
+        if (filters?.vendorId) {
+            statuses = statuses.filter((s: ReconciliationStatus) => s.vendor_name === filters.vendorId);
+        }
+        if (filters?.status) {
+            statuses = statuses.filter((s: ReconciliationStatus) => s.status === filters.status);
+        }
+        
+        return statuses;
     }
     
     static async getReconciliationStatus(invoiceId: string): Promise<ReconciliationStatus | null> {

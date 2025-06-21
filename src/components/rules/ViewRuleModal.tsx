@@ -211,34 +211,30 @@ export default function ViewRuleModal({ isOpen, onClose, rule }: ViewRuleModalPr
                         )}
                     </button>
 
-                    {expandedSections.actions && rule.actions && rule.actions.length > 0 && (
+                    {expandedSections.actions && rule.actions && (
                         <div className="p-3 border-t border-gray-200 space-y-3">
-                            {rule.actions.map((action, index) => (
-                                <div key={index} className="border border-gray-200 rounded-lg p-3">
-                                    <h4 className="text-sm font-medium text-gray-900 mb-2">
-                                        Action #{index + 1}
-                                    </h4>
-                                    <div className="space-y-2">
-                                        <div>
-                                            <span className="font-medium text-gray-500 text-sm">Type:</span>
-                                            <span className="ml-2 text-gray-900 text-sm">{action.type}</span>
-                                        </div>
-                                        {action.parameters && Object.keys(action.parameters).length > 0 && (
-                                            <div>
-                                                <span className="font-medium text-gray-500 text-sm">Parameters:</span>
-                                                <div className="mt-1 bg-gray-50 p-2 rounded space-y-1">
-                                                    {Object.entries(action.parameters).map(([key, value]) => (
-                                                        <div key={key} className="text-xs">
-                                                            <span className="font-medium text-gray-600">{key}:</span>
-                                                            <span className="ml-2 text-gray-900">{String(value)}</span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-500">On Match</label>
+                                    <p className="mt-1 text-sm text-gray-900">{rule.actions.onMatch || 'CONTINUE'}</p>
                                 </div>
-                            ))}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-500">On Mismatch</label>
+                                    <p className="mt-1 text-sm text-gray-900">{rule.actions.onMismatch || 'CONTINUE'}</p>
+                                </div>
+                                {rule.actions.disputeType && (
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-500">Dispute Type</label>
+                                        <p className="mt-1 text-sm text-gray-900">{rule.actions.disputeType}</p>
+                                    </div>
+                                )}
+                                {rule.actions.warningType && (
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-500">Warning Type</label>
+                                        <p className="mt-1 text-sm text-gray-900">{rule.actions.warningType}</p>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     )}
                 </div>
@@ -269,18 +265,38 @@ export default function ViewRuleModal({ isOpen, onClose, rule }: ViewRuleModalPr
                                     </h4>
                                     <div className="space-y-2 text-sm">
                                         <div>
-                                            <span className="font-medium text-gray-500">Field:</span>
-                                            <span className="ml-2 text-gray-900">{condition.field}</span>
+                                            <span className="font-medium text-gray-500">Type:</span>
+                                            <span className="ml-2 text-gray-900">{(condition as any).type || 'N/A'}</span>
                                         </div>
+                                        {(condition as any).invoiceField && (
+                                            <div>
+                                                <span className="font-medium text-gray-500">Invoice Field:</span>
+                                                <span className="ml-2 text-gray-900">{(condition as any).invoiceField}</span>
+                                            </div>
+                                        )}
+                                        {(condition as any).omsField && (
+                                            <div>
+                                                <span className="font-medium text-gray-500">OMS Field:</span>
+                                                <span className="ml-2 text-gray-900">{(condition as any).omsField}</span>
+                                            </div>
+                                        )}
+                                        {(condition as any).field && (
+                                            <div>
+                                                <span className="font-medium text-gray-500">Field:</span>
+                                                <span className="ml-2 text-gray-900">{(condition as any).field}</span>
+                                            </div>
+                                        )}
                                         <div>
                                             <span className="font-medium text-gray-500">Operator:</span>
                                             <span className="ml-2 text-gray-900">{getOperatorLabel(condition.operator)}</span>
                                         </div>
-                                        <div>
-                                            <span className="font-medium text-gray-500">Data Type:</span>
-                                            <span className="ml-2 text-gray-900">{condition.dataType}</span>
-                                        </div>
-                                        {condition.value && (
+                                        {(condition as any).dataType && (
+                                            <div>
+                                                <span className="font-medium text-gray-500">Data Type:</span>
+                                                <span className="ml-2 text-gray-900">{(condition as any).dataType}</span>
+                                            </div>
+                                        )}
+                                        {condition.value !== undefined && condition.value !== null && (
                                             <div>
                                                 <span className="font-medium text-gray-500">Value:</span>
                                                 {typeof condition.value === 'object' ? (
@@ -299,10 +315,12 @@ export default function ViewRuleModal({ isOpen, onClose, rule }: ViewRuleModalPr
                                                 )}
                                             </div>
                                         )}
-                                        {condition.caseSensitive !== undefined && (
+                                        {(condition as any).configuration && (
                                             <div>
-                                                <span className="font-medium text-gray-500">Case Sensitive:</span>
-                                                <span className="ml-2 text-gray-900">{condition.caseSensitive ? 'Yes' : 'No'}</span>
+                                                <span className="font-medium text-gray-500">Configuration:</span>
+                                                <div className="mt-1 bg-gray-50 p-2 rounded text-xs">
+                                                    <pre>{JSON.stringify((condition as any).configuration, null, 2)}</pre>
+                                                </div>
                                             </div>
                                         )}
                                     </div>

@@ -1,181 +1,261 @@
-# Invoice Reconciliation Web App
+# Invoice Reconciliation Web Application
 
-A React-based invoice reconciliation system with Google Cloud Firestore backend using Application Default Credentials.
+A web application for automated invoice reconciliation using Google Cloud Firestore and Application Default Credentials (ADC).
 
-## Project Structure
+## Overview
 
-```
-├── api/                          # Backend API server
-│   ├── routes/                   # Express route handlers
-│   │   ├── vendors.js           # Vendor CRUD operations
-│   │   ├── extractions.js       # Invoice extraction data endpoints
-│   │   ├── reconciliations.js   # Reconciliation summary endpoints
-│   │   ├── rules.js             # Validation rules management
-│   │   └── status.js            # Processing status tracking
-│   └── services/
-│       └── firestore.service.js # Google Cloud Firestore service layer
-├── src/
-│   ├── components/              # React components organized by feature
-│   │   ├── auth/               # Authentication components
-│   │   ├── common/             # Shared UI components
-│   │   ├── dashboard/          # Dashboard widgets and stats
-│   │   ├── invoices/           # Invoice management components
-│   │   ├── layout/             # App layout components
-│   │   ├── rules/              # Rule configuration components
-│   │   └── vendors/            # Vendor management components
-│   ├── config/                 # App configuration
-│   │   ├── app.config.ts       # Main app configuration
-│   │   └── constants.ts        # App constants and enums
-│   ├── hooks/                  # Custom React hooks
-│   │   ├── useAuth.ts          # Authentication hook
-│   │   ├── useInvoices.ts      # Invoice data management
-│   │   ├── useRules.ts         # Rule management
-│   │   └── useVendors.ts       # Vendor data management
-│   ├── pages/                  # Route-based page components
-│   │   ├── auth/               # Login page
-│   │   ├── dashboard/          # Dashboard page
-│   │   ├── invoices/           # Invoice list and detail pages
-│   │   ├── rules/              # Rules management page
-│   │   └── vendors/            # Vendor management pages
-│   ├── services/               # API and data services
-│   │   └── api/                # REST API client services
-│   ├── store/                  # Redux store configuration
-│   │   └── slices/             # Redux feature slices
-│   └── types/                  # TypeScript type definitions
-│       └── api.types.ts        # API data types
-├── server.js                   # Express server entry point
-├── package.json                # Dependencies and scripts
-├── vite.config.ts              # Vite configuration
-└── .env                        # Environment configuration
+This application provides an intuitive interface for managing and reconciling invoices with automated extraction and validation capabilities. It uses Google Cloud Firestore as the backend database and supports multi-environment deployment through configurable collection names.
 
-```
+## Features
 
-## Configuration
+- **Invoice Management**: Upload, view, and manage invoices
+- **Automated Extraction**: Extract line items and metadata from uploaded invoices
+- **Reconciliation Engine**: Automated matching and validation of invoice line items
+- **Multi-vendor Support**: Configure different validation rules per vendor
+- **Real-time Status Tracking**: Monitor reconciliation progress and status
+- **Detailed Reporting**: View extraction results and reconciliation details
 
-### 1. Google Cloud Project Setup
+## Prerequisites
 
-Update the project ID in the `.env` file:
+- Node.js 18+ and npm
+- Google Cloud Project with Firestore enabled
+- Google Cloud CLI (`gcloud`) installed and configured
+- Application Default Credentials (ADC) set up
 
-**.env:**
-```
-# Google Cloud Project Configuration
-GOOGLE_CLOUD_PROJECT=your-project-id
-```
+## Setup Instructions
 
-The backend automatically reads the project ID from the `GOOGLE_CLOUD_PROJECT` environment variable.
+### 1. Clone the Repository
 
-### 2. Firestore Collections
-
-The app uses these Firestore collections:
-
-| Collection Name | Purpose | Key Fields |
-|----------------|---------|------------|
-| `vendorConfigurations` | Vendor/partner information | vendorCode, vendorName, vendorType, isActive |
-| `extractionResults` | Extracted invoice data | invoiceId, vendorId, invoiceNumber, totalAmount, status |
-| `invoiceReconciliationSummaries` | Reconciliation results | invoiceId, vendorId, status, variance, issues |
-| `reconciliationRules` | Validation rules per vendor | vendorId, ruleName, ruleType, conditions, actions |
-| `reconciliationStatus` | Processing status tracking | invoiceId, currentStage, progress, errors |
-
-### 3. Collection Mapping
-
-If your Firestore collections have different names, update them in:
-
-**api/services/firestore.service.js:**
-```javascript
-const COLLECTIONS = {
-  VENDORS: 'vendorConfigurations',        // Change to your vendors collection
-  EXTRACTIONS: 'extractionResults',       // Change to your extractions collection
-  RECONCILIATIONS: 'invoiceReconciliationSummaries', // Change to your reconciliations collection
-  RULES: 'reconciliationRules',           // Change to your rules collection
-  STATUS: 'reconciliationStatus'          // Change to your status collection
-};
-```
-
-### 4. Running the Application
-
-**Development Mode:**
 ```bash
-# Install dependencies
-npm install
+git clone <repository-url>
+cd invoice_reconcilation_web
+```
 
-# Run both frontend (port 3000) and backend (port 3001)
+### 2. Install Dependencies
+
+```bash
+npm install
+```
+
+### 3. Configure Google Cloud Authentication
+
+Set up Application Default Credentials (ADC):
+
+```bash
+gcloud auth application-default login
+```
+
+Select your Google Cloud project:
+
+```bash
+gcloud config set project YOUR_PROJECT_ID
+```
+
+### 4. Environment Configuration
+
+Copy the example environment file:
+
+```bash
+cp .env.example .env.local
+```
+
+Edit `.env.local` and update the following required variables:
+
+```bash
+# Required: Your Google Cloud Project ID
+GOOGLE_CLOUD_PROJECT=your-project-id
+GCP_PROJECT_ID=your-project-id
+
+# Required: Storage bucket for file uploads
+STORAGE_BUCKET_NAME=your-storage-bucket
+GCS_BUCKET_NAME=your-storage-bucket
+```
+
+### 5. Firestore Collections
+
+The application uses the following Firestore collections (customizable via environment variables):
+
+| Collection | Default Name | Environment Variable | Purpose |
+|------------|--------------|---------------------|---------|
+| Vendors | `vendor_configurations` | `COLLECTION_VENDORS` | Vendor/partner configurations |
+| Extractions | `extractionResults` | `COLLECTION_EXTRACTIONS` | Raw extraction results |
+| Reconciliations | `invoice_reconciliation_summaries` | `COLLECTION_RECONCILIATIONS` | Reconciliation summaries |
+| Rules | `reconciliation_rules` | `COLLECTION_RULES` | Validation rules per vendor |
+| Status | `reconciliation_status` | `COLLECTION_STATUS` | Line item reconciliation status |
+| Metadata | `extraction_metadata` | `COLLECTION_EXTRACTION_METADATA` | Invoice metadata |
+| Parts | `extraction_parts` | `COLLECTION_EXTRACTION_PARTS` | Extracted line items |
+
+### 6. Run the Application
+
+Development mode:
+
+```bash
 npm run dev
 ```
 
-**Production Mode:**
+This starts:
+- Backend server on http://localhost:3001
+- Frontend development server on http://localhost:3000
+
+Production build:
+
 ```bash
-# Build frontend and run server
 npm run build
 npm start
 ```
 
-### 5. Authentication
-
-- Frontend uses Google OAuth for user authentication (configured in .env)
-- Backend uses Google Cloud Application Default Credentials (ADC)
-- No API keys needed - pure Google Cloud authentication
-
-### 6. Environment Variables
-
-Key environment variables in `.env`:
+## Project Structure
 
 ```
-# Google OAuth
-VITE_GOOGLE_CLIENT_ID=your-oauth-client-id
-
-# API Configuration  
-VITE_API_BASE_URL=/api  # Points to backend API
-
-# Server Configuration
-PORT=3001  # Backend server port
+invoice_reconcilation_web/
+├── api/                    # Backend API
+│   ├── config/            # Configuration and constants
+│   ├── routes/            # Express route handlers
+│   ├── services/          # Business logic and Firestore services
+│   └── utils/             # Utility functions
+├── src/                    # Frontend React application
+│   ├── components/        # React components
+│   ├── pages/            # Page components
+│   ├── services/         # API client services
+│   ├── store/            # Redux store and slices
+│   ├── hooks/            # Custom React hooks
+│   └── types/            # TypeScript type definitions
+├── server.js              # Express server entry point
+└── vite.config.ts         # Vite configuration
 ```
 
-## Data Models
+## Multi-Environment Deployment
 
-The app expects these document structures in Firestore:
+To deploy to different customer environments:
 
-### Vendor Configuration
-```javascript
-{
-  vendorCode: string,
-  vendorName: string,
-  vendorType: 'OTA' | 'DIRECT' | 'CHANNEL_MANAGER' | 'GDS' | 'OTHER',
-  isActive: boolean,
-  // ... (see api.types.ts for full structure)
-}
-```
+1. **Create environment-specific `.env` file**:
+   ```bash
+   cp .env.example .env.customer1
+   ```
 
-### Extraction Result
-```javascript
-{
-  invoiceId: string,
-  vendorId: string,
-  invoiceNumber: string,
-  totalAmount: number,
-  status: 'PENDING' | 'COMPLETED' | 'FAILED' | 'REVIEW_REQUIRED',
-  // ... (see api.types.ts for full structure)
-}
-```
+2. **Update collection names** (if different):
+   ```bash
+   COLLECTION_VENDORS=customer1_vendors
+   COLLECTION_RECONCILIATIONS=customer1_reconciliations
+   # ... etc
+   ```
+
+3. **Update project configuration**:
+   ```bash
+   GOOGLE_CLOUD_PROJECT=customer1-project-id
+   GCP_PROJECT_ID=customer1-project-id
+   STORAGE_BUCKET_NAME=customer1-invoices
+   ```
+
+4. **Run with specific environment**:
+   ```bash
+   # Load specific environment file
+   cp .env.customer1 .env.local
+   npm run dev
+   ```
 
 ## API Endpoints
 
-All API endpoints are prefixed with `/api`:
+### Vendors
+- `GET /api/vendors` - List all vendors
+- `GET /api/vendors/:id` - Get vendor by ID
+- `POST /api/vendors` - Create vendor
+- `PUT /api/vendors/:id` - Update vendor
+- `DELETE /api/vendors/:id` - Delete vendor
 
-- `GET/POST /api/vendors` - Vendor management
-- `GET/POST /api/extractions` - Invoice extraction data
-- `GET/POST /api/reconciliations` - Reconciliation summaries
-- `GET/POST /api/rules` - Validation rules
-- `GET/POST /api/status` - Processing status
+### Reconciliations
+- `GET /api/reconciliations` - List reconciliations
+- `GET /api/reconciliations/:id` - Get reconciliation by ID
+- `GET /api/reconciliations/invoice/:invoiceId` - Get by invoice ID
+- `POST /api/reconciliations/:id/approve` - Approve reconciliation
+- `POST /api/reconciliations/:id/reject` - Reject reconciliation
 
-## Notes
+### Extraction
+- `GET /api/extraction/parts/:extractionId` - Get extracted line items
 
-- The app uses Google Cloud Firestore directly via backend API
-- No Firebase SDK or API keys required
-- All Firestore timestamps are converted to ISO strings in API responses
-- Frontend proxies API calls through Vite in development
-- No CORS issues as everything runs on same origin in production
-- Use `.env.example` as reference for environment variables
+### Status
+- `GET /api/status/extraction/:extractionId` - Get reconciliation status by extraction ID
+- `GET /api/status/run/:runId` - Get status by run ID
 
-## Field Mapping and Updates
+### Upload
+- `POST /api/upload` - Upload invoice file
 
-For detailed instructions on how to update field mappings when Firestore collections change or when you need to modify UI fields, see [FIELD_MAPPING_GUIDE.md](./FIELD_MAPPING_GUIDE.md).
+## Development
+
+### Commands
+
+```bash
+# Development with hot reload
+npm run dev
+
+# Build for production
+npm run build
+
+# Run production build
+npm start
+
+# Type checking
+npm run type-check
+
+# Linting
+npm run lint
+
+# Run specific servers
+npm run dev:server    # Backend only
+npm run dev:client    # Frontend only
+```
+
+### Technology Stack
+
+- **Frontend**: React 18, TypeScript, Vite, Redux Toolkit, Tailwind CSS
+- **Backend**: Node.js, Express, Google Cloud Firestore
+- **Authentication**: Google Application Default Credentials (ADC)
+- **Build Tools**: Vite, TypeScript
+
+## Troubleshooting
+
+### Authentication Issues
+
+If you encounter authentication errors:
+
+1. Ensure ADC is set up:
+   ```bash
+   gcloud auth application-default login
+   ```
+
+2. Verify project is set:
+   ```bash
+   gcloud config get-value project
+   ```
+
+3. Check Firestore API is enabled:
+   ```bash
+   gcloud services enable firestore.googleapis.com
+   ```
+
+### Collection Not Found
+
+If collections are not found:
+
+1. Verify collection names in Firestore Console
+2. Check environment variables are loaded correctly
+3. Ensure `.env.local` exists and contains correct values
+
+### Port Conflicts
+
+If port 3000 or 3001 is in use:
+
+1. Change port in `.env.local`:
+   ```bash
+   PORT=3002
+   ```
+
+2. For Vite dev server, update `vite.config.ts`
+
+
+
+## Additional Documentation
+
+- [ARCHITECTURE.md](./ARCHITECTURE.md) - System architecture and design principles
+- [APPENDIX.md](./APPENDIX.md) - Technical reference including API docs, Firestore schema, and field mappings
+

@@ -1,46 +1,63 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, FileText, Filter, AlertCircle, DollarSign, CheckCircle, Clock } from 'lucide-react';
+import { Plus, Search, FileText, Filter, AlertCircle, DollarSign, CheckCircle, Clock, RefreshCw } from 'lucide-react';
 import { useInvoices } from '@/hooks/useInvoices';
 import { useVendors } from '@/hooks/useVendors';
-import { LoadingSpinner, Card } from '@/components/common';
+import { LoadingSpinner, Card, SuccessNotification, InvoicesShimmer } from '@/components/common';
 import { formatCurrency, formatDate } from '@/utils/formatters';
 import { APP_CONFIG } from '@/config/app.config';
 import AddInvoiceModal from './AddInvoiceModal';
+import { uploadApiService } from '@/services/api/upload.api.service';
+import { cache, CACHE_KEYS } from '@/utils/cache';
 
 export default function InvoicesPage() {
     const navigate = useNavigate();
-    const { invoices, loading, error } = useInvoices();
+    const { invoices, loading, error, refreshData } = useInvoices();
     const { vendors } = useVendors();
+    const [isRefreshing, setIsRefreshing] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedVendor, setSelectedVendor] = useState('');
     const [selectedStatus, setSelectedStatus] = useState('');
     const [showAddModal, setShowAddModal] = useState(false);
+    const [showSuccessNotification, setShowSuccessNotification] = useState(false);
 
     // Date range state - no default values
     const [dateFrom, setDateFrom] = useState('');
     const [dateTo, setDateTo] = useState('');
 
-    // Get vendor name mapping
+    // Get vendor name mapping - support both camelCase and snake_case
     const vendorMap = vendors.reduce((acc, vendor) => {
-        acc[vendor.id!] = vendor.vendorName;
+        acc[vendor.id!] = vendor.vendorName || vendor.vendor_name || '';
         return acc;
     }, {} as Record<string, string>);
 
     // Filter invoices based on all criteria including date range
     const filteredInvoices = invoices.filter(invoice => {
-        const vendorName = vendorMap[invoice.vendorId] || '';
+        const invoiceVendorName = invoice.vendor_name || invoice.vendorName || '';
         const matchesSearch = searchTerm === '' ||
-            invoice.invoiceId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            vendorName.toLowerCase().includes(searchTerm.toLowerCase());
+            (invoice.invoiceId && invoice.invoiceId.toLowerCase().includes(searchTerm.toLowerCase())) ||
+            (invoice.invoiceNumber && invoice.invoiceNumber.toLowerCase().includes(searchTerm.toLowerCase())) ||
+            invoiceVendorName.toLowerCase().includes(searchTerm.toLowerCase());
 
-        const matchesVendor = selectedVendor === '' || invoice.vendorId === selectedVendor;
+        // For vendor filter, compare by vendor name since vendorId is derived from vendor_name
+        const matchesVendor = selectedVendor === '' || 
+            (selectedVendor && vendorMap[selectedVendor] && 
+             invoiceVendorName.toLowerCase() === vendorMap[selectedVendor].toLowerCase());
+        
         const matchesStatus = selectedStatus === '' || invoice.status === selectedStatus;
 
-        // Date filtering - only apply if dates are set
-        const reconciliationDate = new Date(invoice.reconciliationDate);
-        const matchesDateRange = (!dateFrom || reconciliationDate >= new Date(dateFrom)) &&
-            (!dateTo || reconciliationDate <= new Date(dateTo));
+        // Date filtering - only apply if dates are set (filter by invoice date)
+        let matchesDateRange = true;
+        if (dateFrom || dateTo) {
+            if (invoice.invoiceDate) {
+                const invoiceDate = new Date(invoice.invoiceDate);
+                matchesDateRange = (!dateFrom || invoiceDate >= new Date(dateFrom)) &&
+                    (!dateTo || invoiceDate <= new Date(dateTo));
+            } else {
+                // If no invoice date, exclude from filtered results when date filter is active
+                matchesDateRange = false;
+            }
+        }
 
         return matchesSearch && matchesVendor && matchesStatus && matchesDateRange;
     });
@@ -48,12 +65,17 @@ export default function InvoicesPage() {
     // Calculate metrics based on filtered data
     const metrics = {
         totalInvoices: filteredInvoices.length,
-        matched: filteredInvoices.filter(i => i.status === 'MATCHED').length,
-        pending: filteredInvoices.filter(i => i.status === 'PENDING').length,
-        mismatched: filteredInvoices.filter(i => i.status === 'MISMATCHED').length,
-        disputed: filteredInvoices.filter(i => i.status === 'DISPUTED').length,
-        totalAmount: filteredInvoices.reduce((sum, i) => sum + i.totalInvoiceAmount, 0),
-        totalVariance: filteredInvoices.reduce((sum, i) => sum + Math.abs(i.variance), 0)
+        processed: filteredInvoices.filter(i => {
+            const disputeCount = Object.values(i.dispute_type_summary || {}).reduce((a, b) => a + b, 0);
+            const holdCount = i.status_summary['HOLD_PENDING_REVIEW'] || 0;
+            return disputeCount === 0 && holdCount === 0;
+        }).length,
+        onHold: filteredInvoices.reduce((sum, i) => sum + (i.status_summary['HOLD_PENDING_REVIEW'] || 0), 0),
+        disputed: filteredInvoices.reduce((sum, i) => {
+            return sum + Object.values(i.dispute_type_summary || {}).reduce((a, b) => a + b, 0);
+        }, 0),
+        totalAmount: filteredInvoices.reduce((sum, i) => sum + i.total_invoice_amount, 0),
+        totalLineItems: filteredInvoices.reduce((sum, i) => sum + i.total_line_items, 0)
     };
 
     const handleViewDetails = (invoiceId: string) => {
@@ -62,13 +84,25 @@ export default function InvoicesPage() {
 
     const handleAddInvoice = async (file: File, vendorId: string, invoiceData: any) => {
         try {
-            // TODO: Implement invoice upload/creation
-            console.log('Adding invoice:', { file, vendorId, invoiceData });
+            console.log('Uploading invoice:', { fileName: file.name, vendorId, invoiceData });
+            
+            // Upload the invoice file
+            const uploadResult = await uploadApiService.uploadInvoice(file, vendorId, invoiceData);
+            
+            console.log('Upload result:', uploadResult);
+            
+            // Close modal and show success notification
             setShowAddModal(false);
-            // Refresh the invoice list
-            window.location.reload();
-        } catch (error) {
-            console.error('Error adding invoice:', error);
+            setShowSuccessNotification(true);
+            
+            // Clear cache and refresh data
+            cache.remove(CACHE_KEYS.INVOICES);
+            setTimeout(() => {
+                refreshData();
+            }, 1000);
+        } catch (error: any) {
+            console.error('Error uploading invoice:', error);
+            alert(`Failed to upload invoice: ${error.message || 'Unknown error'}`);
         }
     };
 
@@ -80,15 +114,18 @@ export default function InvoicesPage() {
         setDateTo('');
     };
 
+    const handleRefresh = async () => {
+        setIsRefreshing(true);
+        cache.remove(CACHE_KEYS.INVOICES);
+        await refreshData();
+        setIsRefreshing(false);
+    };
+
     // Check if any filters are active
     const hasActiveFilters = searchTerm || selectedVendor || selectedStatus || dateFrom || dateTo;
 
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center h-64">
-                <LoadingSpinner />
-            </div>
-        );
+    if (loading && invoices.length === 0) {
+        return <InvoicesShimmer />;
     }
 
     if (error) {
@@ -111,13 +148,23 @@ export default function InvoicesPage() {
                         View and manage all your invoices in one place
                     </p>
                 </div>
-                <button
-                    onClick={() => setShowAddModal(true)}
-                    className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-                >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Invoice
-                </button>
+                <div className="flex items-center space-x-2">
+                    <button
+                        onClick={handleRefresh}
+                        disabled={isRefreshing || loading}
+                        className="flex items-center px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium disabled:opacity-50"
+                        title="Refresh data"
+                    >
+                        <RefreshCw className={`h-4 w-4 ${isRefreshing || loading ? 'animate-spin' : ''}`} />
+                    </button>
+                    <button
+                        onClick={() => setShowAddModal(true)}
+                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                    >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Invoice
+                    </button>
+                </div>
             </div>
 
             {/* Filters - Sleek Design */}
@@ -130,7 +177,7 @@ export default function InvoicesPage() {
                         <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-gray-400" />
                         <input
                             type="text"
-                            placeholder="Search..."
+                            placeholder="Search invoice..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="pl-7 pr-2 py-1 w-full bg-white border border-gray-200 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
@@ -146,7 +193,7 @@ export default function InvoicesPage() {
                         <option value="">All Vendors</option>
                         {vendors.map(vendor => (
                             <option key={vendor.id} value={vendor.id}>
-                                {vendor.vendorName}
+                                {vendor.vendorName || vendor.vendor_name || ''}
                             </option>
                         ))}
                     </select>
@@ -208,8 +255,8 @@ export default function InvoicesPage() {
                 <Card className="p-3">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-xs font-medium text-gray-600">Matched</p>
-                            <p className="mt-0.5 text-xl font-bold text-green-600">{metrics.matched}</p>
+                            <p className="text-xs font-medium text-gray-600">Processed</p>
+                            <p className="mt-0.5 text-xl font-bold text-green-600">{metrics.processed}</p>
                         </div>
                         <CheckCircle className="h-6 w-6 text-green-500" />
                     </div>
@@ -218,18 +265,18 @@ export default function InvoicesPage() {
                 <Card className="p-3">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-xs font-medium text-gray-600">Pending</p>
-                            <p className="mt-0.5 text-xl font-bold text-blue-600">{metrics.pending}</p>
+                            <p className="text-xs font-medium text-gray-600">On Hold</p>
+                            <p className="mt-0.5 text-xl font-bold text-yellow-600">{metrics.onHold}</p>
                         </div>
-                        <Clock className="h-6 w-6 text-blue-500" />
+                        <Clock className="h-6 w-6 text-yellow-500" />
                     </div>
                 </Card>
 
                 <Card className="p-3">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-xs font-medium text-gray-600">Mismatched</p>
-                            <p className="mt-0.5 text-xl font-bold text-red-600">{metrics.mismatched}</p>
+                            <p className="text-xs font-medium text-gray-600">Disputed</p>
+                            <p className="mt-0.5 text-xl font-bold text-red-600">{metrics.disputed}</p>
                         </div>
                         <AlertCircle className="h-6 w-6 text-red-500" />
                     </div>
@@ -251,28 +298,31 @@ export default function InvoicesPage() {
             {/* Reconciliation Summary List */}
             <Card>
                 <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200 text-xs">
+                    <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                         <tr>
-                            <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Invoice ID
+                            <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                #
                             </th>
-                            <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Invoice Number
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Vendor
                             </th>
-                            <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">
-                                Date
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Invoice Date
                             </th>
-                            <th className="px-2 py-1.5 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Amount
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Payment Due Date
                             </th>
-                            <th className="px-2 py-1.5 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Variance
+                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Invoice Amount
                             </th>
-                            <th className="px-2 py-1.5 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Status
                             </th>
-                            <th className="px-2 py-1.5 text-right text-xs font-medium text-gray-500 uppercase">
+                            <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Actions
                             </th>
                         </tr>
@@ -280,64 +330,82 @@ export default function InvoicesPage() {
                         <tbody className="bg-white divide-y divide-gray-200">
                         {filteredInvoices.length === 0 ? (
                             <tr>
-                                <td colSpan={7} className="px-6 py-4 text-center text-xs text-gray-500">
+                                <td colSpan={8} className="px-6 py-4 text-center text-sm text-gray-500">
                                     No reconciliations found
                                 </td>
                             </tr>
                         ) : (
-                            filteredInvoices.map((invoice) => {
-                                const vendorName = vendorMap[invoice.vendorId] || 'Unknown Vendor';
+                            filteredInvoices.map((invoice, index) => {
+                                const disputeCount = Object.values(invoice.dispute_type_summary || {}).reduce((a, b) => a + b, 0);
+                                const holdCount = invoice.status_summary['HOLD_PENDING_REVIEW'] || 0;
+                                const processedCount = invoice.total_line_items - holdCount - disputeCount;
+                                
+                                // Format dates
+                                const invoiceDate = invoice.invoiceDate ? 
+                                    new Date(invoice.invoiceDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 
+                                    '-';
+                                const paymentDueDate = invoice.paymentDueDate ? 
+                                    new Date(invoice.paymentDueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 
+                                    '-';
+                                
                                 return (
-                                    <tr key={invoice.id} className="hover:bg-gray-50">
-                                        <td className="px-2 py-1.5 whitespace-nowrap">
-                                            <div className="text-xs font-medium text-gray-900">
-                                                {invoice.invoiceId}
+                                    <tr key={invoice.id} className="hover:bg-gray-50 border-b border-gray-200">
+                                        <td className="px-3 py-3 whitespace-nowrap text-center">
+                                            <div className="text-sm text-gray-500">
+                                                {index + 1}
                                             </div>
                                         </td>
-                                        <td className="px-2 py-1.5 whitespace-nowrap">
-                                            <div className="text-xs text-gray-900 truncate max-w-[150px]" title={vendorName}>
-                                                {vendorName}
+                                        <td className="px-4 py-3 whitespace-nowrap">
+                                            <div className="text-sm font-medium text-gray-900">
+                                                {invoice.invoiceNumber || '-'}
                                             </div>
                                         </td>
-                                        <td className="px-2 py-1.5 whitespace-nowrap hidden md:table-cell">
-                                            <div className="text-xs text-gray-600">
-                                                {new Date(invoice.reconciliationDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })}
+                                        <td className="px-4 py-3 whitespace-nowrap">
+                                            <div className="text-sm text-gray-900 truncate max-w-[200px]" title={invoice.vendor_name}>
+                                                {invoice.vendor_name}
                                             </div>
                                         </td>
-                                        <td className="px-2 py-1.5 whitespace-nowrap text-right">
-                                            <div className="text-xs font-medium text-gray-900">
-                                                {formatCurrency(invoice.totalInvoiceAmount)}
+                                        <td className="px-4 py-3 whitespace-nowrap">
+                                            <div className="text-sm text-gray-600">
+                                                {invoiceDate}
                                             </div>
                                         </td>
-                                        <td className="px-2 py-1.5 whitespace-nowrap text-right">
-                                            <div className={`text-xs font-medium ${
-                                                invoice.variance === 0 ? 'text-green-600' :
-                                                Math.abs(invoice.variance) < 10 ? 'text-yellow-600' :
-                                                'text-red-600'
-                                            }`}>
-                                                {formatCurrency(Math.abs(invoice.variance))}
-                                                {invoice.variancePercentage > 0 && (
-                                                    <span className="text-gray-500 ml-1">
-                                                        ({Math.abs(invoice.variancePercentage).toFixed(1)}%)
+                                        <td className="px-4 py-3 whitespace-nowrap">
+                                            <div className="text-sm text-gray-600">
+                                                {paymentDueDate}
+                                            </div>
+                                        </td>
+                                        <td className="px-4 py-3 whitespace-nowrap text-right">
+                                            <div className="text-sm font-medium text-gray-900">
+                                                {invoice.invoiceCurrency && invoice.invoiceCurrency !== 'USD' && (
+                                                    <span className="text-gray-500 mr-1">{invoice.invoiceCurrency}</span>
+                                                )}
+                                                {formatCurrency(invoice.total_invoice_amount)}
+                                            </div>
+                                        </td>
+                                        <td className="px-4 py-3 whitespace-nowrap text-center">
+                                            <div className="flex flex-col items-center space-y-1">
+                                                {holdCount > 0 && (
+                                                    <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">
+                                                        {holdCount} HOLD
+                                                    </span>
+                                                )}
+                                                {disputeCount > 0 && (
+                                                    <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">
+                                                        {disputeCount} DISPUTED
+                                                    </span>
+                                                )}
+                                                {holdCount === 0 && disputeCount === 0 && (
+                                                    <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                                                        PROCESSED
                                                     </span>
                                                 )}
                                             </div>
                                         </td>
-                                        <td className="px-2 py-1.5 whitespace-nowrap text-center">
-                                            <span className={`inline-flex px-1.5 py-0.5 text-xs font-medium rounded ${
-                                                invoice.status === 'MATCHED' ? 'bg-green-100 text-green-800' :
-                                                invoice.status === 'PENDING' ? 'bg-blue-100 text-blue-800' :
-                                                invoice.status === 'MISMATCHED' ? 'bg-red-100 text-red-800' :
-                                                invoice.status === 'PARTIAL_MATCH' ? 'bg-yellow-100 text-yellow-800' :
-                                                'bg-gray-100 text-gray-800'
-                                            }`}>
-                                                {invoice.status}
-                                            </span>
-                                        </td>
-                                        <td className="px-2 py-1.5 whitespace-nowrap text-right">
+                                        <td className="px-4 py-3 whitespace-nowrap text-center">
                                             <button
                                                 onClick={() => handleViewDetails(invoice.id!)}
-                                                className="text-xs text-blue-600 hover:text-blue-900 px-1"
+                                                className="text-sm text-blue-600 hover:text-blue-900 font-medium"
                                             >
                                                 View Details
                                             </button>
@@ -356,7 +424,18 @@ export default function InvoicesPage() {
                 isOpen={showAddModal}
                 onClose={() => setShowAddModal(false)}
                 onSubmit={handleAddInvoice}
-                vendors={vendors.map(v => ({ id: v.id || v.vendorCode, vendorName: v.vendorName }))}
+                vendors={vendors.map(v => ({ id: v.id || v.vendorCode || v.vendor_code, vendorName: v.vendorName || v.vendor_name || '' }))}
+            />
+            
+            {/* Success Notification */}
+            <SuccessNotification
+                isOpen={showSuccessNotification}
+                onClose={() => setShowSuccessNotification(false)}
+                title="Invoice Upload Successful!"
+                message="Invoice reconciliation workflow triggered successfully"
+                subMessage="Your invoice information will be available shortly"
+                autoClose={true}
+                autoCloseDelay={5000}
             />
         </div>
     );

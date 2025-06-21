@@ -1,6 +1,25 @@
-import { mockStatistics } from './mock-data';
-
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Mock statistics data
+const mockStatistics = {
+  activeVendors: 12,
+  totalExtractions: 1543,
+  totalReconciliations: 1489,
+  totalInvoiceAmount: 2457890.50,
+  totalReconciledAmount: 2445670.25,
+  averageVariance: 0.5,
+  pendingInvoices: 54,
+  disputedInvoices: 18,
+  successRate: 96.5,
+  monthlyTrend: [
+    { month: 'Jan', invoices: 120, amount: 245000, reconciled: 118 },
+    { month: 'Feb', invoices: 135, amount: 268000, reconciled: 132 },
+    { month: 'Mar', invoices: 142, amount: 285000, reconciled: 138 },
+    { month: 'Apr', invoices: 128, amount: 256000, reconciled: 125 },
+    { month: 'May', invoices: 155, amount: 310000, reconciled: 150 },
+    { month: 'Jun', invoices: 148, amount: 295000, reconciled: 143 }
+  ]
+};
 
 interface DashboardStatistics {
   activeVendors: number;

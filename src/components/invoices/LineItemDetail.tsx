@@ -197,14 +197,6 @@ export function LineItemDetail({ lineItem, onClose }: LineItemDetailProps) {
                                 </div>
                             </>
                         )}
-                        {lineItem.financial.variance !== undefined && lineItem.financial.variance !== 0 && (
-                            <div className="flex justify-between">
-                                <span className="text-gray-500">Variance</span>
-                                <span className={`font-medium ${lineItem.financial.variance > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                                    {formatCurrency(Math.abs(lineItem.financial.variance))} ({lineItem.financial.variancePercentage}%)
-                                </span>
-                            </div>
-                        )}
                     </div>
                 </div>
             </Card>

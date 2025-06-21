@@ -137,11 +137,11 @@ export const APP_CONFIG = {
     invoice: {
       status: [
         { value: '', label: 'All Status' },
-        { value: 'PENDING', label: 'Pending' },
-        { value: 'MATCHED', label: 'Matched' },
-        { value: 'MISMATCHED', label: 'Mismatched' },
-        { value: 'PARTIAL_MATCH', label: 'Partial Match' },
+        { value: 'HOLD_PENDING_REVIEW', label: 'Hold - Pending Review' },
         { value: 'DISPUTED', label: 'Disputed' },
+        { value: 'FLAG_WARNING', label: 'Warning' },
+        { value: 'FLAG_AS_CANCELLED_PENDING_REFUND', label: 'Cancelled - Pending Refund' },
+        { value: 'PROCESSED', label: 'Processed' },
       ],
     },
 

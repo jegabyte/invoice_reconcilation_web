@@ -14,6 +14,12 @@ class ApiClient {
     // Request interceptor
     this.client.interceptors.request.use(
       (config) => {
+        // Skip authentication for local development
+        if (config.baseURL === '/api') {
+          // Local development - no auth needed
+          return config;
+        }
+        
         // Use gcloud token for Cloud Run authentication
         const gcloudToken = import.meta.env.VITE_GCLOUD_TOKEN;
         if (gcloudToken) {

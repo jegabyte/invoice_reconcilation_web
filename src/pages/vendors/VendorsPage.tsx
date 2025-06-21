@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Plus, Search, Filter } from 'lucide-react';
-import { Card, LoadingSpinner } from '@/components/common';
+import { Card, VendorsShimmer } from '@/components/common';
 import { VendorConfiguration } from '@/types/api.types';
 import { ApiDataService } from '@/services/api.data.service';
 import { APP_CONFIG } from '@/config/app.config';
 import AddVendorModal from './AddVendorModal';
 import ViewVendorModal from './ViewVendorModal';
+import VendorDetailModal from './VendorDetailModal';
 
 export default function VendorsPage() {
     const [vendors, setVendors] = useState<VendorConfiguration[]>([]);
@@ -97,11 +98,7 @@ export default function VendorsPage() {
     };
 
     if (loading) {
-        return (
-            <div className="flex items-center justify-center h-64">
-                <LoadingSpinner />
-            </div>
-        );
+        return <VendorsShimmer />;
     }
 
     return (
@@ -144,7 +141,7 @@ export default function VendorsPage() {
                     <select
                         value={filterType}
                         onChange={(e) => setFilterType(e.target.value)}
-                        className="px-2 py-1 bg-white border border-gray-200 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none min-w-[100px]"
+                        className="px-2 py-1 bg-white border border-gray-200 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none min-w-[120px]"
                     >
                         {APP_CONFIG.filterOptions.vendor.type.map(option => (
                             <option key={option.value} value={option.value}>
@@ -157,7 +154,7 @@ export default function VendorsPage() {
                     <select
                         value={filterStatus}
                         onChange={(e) => setFilterStatus(e.target.value as any)}
-                        className="px-2 py-1 bg-white border border-gray-200 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none min-w-[100px]"
+                        className="px-2 py-1 bg-white border border-gray-200 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none min-w-[120px]"
                     >
                         {APP_CONFIG.filterOptions.vendor.status.map(option => (
                             <option key={option.value} value={option.value}>
@@ -170,7 +167,7 @@ export default function VendorsPage() {
                     <select
                         value={sortBy}
                         onChange={(e) => setSortBy(e.target.value as 'name' | 'code' | 'type' | 'status')}
-                        className="px-2 py-1 bg-white border border-gray-200 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none min-w-[100px]"
+                        className="px-2 py-1 bg-white border border-gray-200 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none min-w-[120px]"
                     >
                         {APP_CONFIG.filterOptions.vendor.sortBy.map(option => (
                             <option key={option.value} value={option.value}>
@@ -203,19 +200,22 @@ export default function VendorsPage() {
                         <thead className="bg-gray-50">
                         <tr>
                             <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Name
+                                Vendor Code
                             </th>
                             <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Code
+                                Vendor Name
                             </th>
                             <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Type
                             </th>
-                            <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">
-                                Model
-                            </th>
                             <th className="px-2 py-1.5 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Status
+                            </th>
+                            <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Business Model
+                            </th>
+                            <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Support Email
                             </th>
                             <th className="px-2 py-1.5 text-right text-xs font-medium text-gray-500 uppercase">
                                 Actions
@@ -225,29 +225,26 @@ export default function VendorsPage() {
                         <tbody className="bg-white divide-y divide-gray-200">
                         {filteredAndSortedVendors.length === 0 ? (
                             <tr>
-                                <td colSpan={6} className="px-6 py-4 text-center text-xs text-gray-500">
+                                <td colSpan={7} className="px-6 py-4 text-center text-xs text-gray-500">
                                     No vendors found
                                 </td>
                             </tr>
                         ) : (
                             filteredAndSortedVendors.map((vendor) => (
-                                <tr key={vendor.id} className="hover:bg-gray-50">
-                                    <td className="px-2 py-1.5 whitespace-nowrap">
-                                        <div className="text-xs font-medium text-gray-900 truncate max-w-[200px]" title={vendor.vendorName}>
-                                            {vendor.vendorName}
-                                        </div>
-                                    </td>
-                                    <td className="px-2 py-1.5 whitespace-nowrap">
-                                        <span className="text-xs text-gray-900">{vendor.vendorCode}</span>
-                                    </td>
-                                    <td className="px-2 py-1.5 whitespace-nowrap">
-                                        <span className="inline-flex px-1.5 py-0.5 text-xs font-medium rounded bg-blue-100 text-blue-800">
-                                            {vendor.vendorType}
+                                <tr key={vendor.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => setViewingVendor(vendor)}>
+                                    <td className="px-2 py-1.5">
+                                        <span className="text-xs font-medium text-gray-900">
+                                            {vendor.vendorCode}
                                         </span>
                                     </td>
-                                    <td className="px-2 py-1.5 whitespace-nowrap hidden md:table-cell">
-                                        <span className="text-xs text-gray-600">
-                                            {vendor.businessModel}
+                                    <td className="px-2 py-1.5">
+                                        <span className="text-xs text-gray-900">
+                                            {vendor.vendorName}
+                                        </span>
+                                    </td>
+                                    <td className="px-2 py-1.5">
+                                        <span className="text-xs text-gray-900">
+                                            {vendor.vendorType}
                                         </span>
                                     </td>
                                     <td className="px-2 py-1.5 whitespace-nowrap text-center">
@@ -259,7 +256,19 @@ export default function VendorsPage() {
                                             {vendor.isActive ? 'Active' : 'Inactive'}
                                         </span>
                                     </td>
-                                    <td className="px-2 py-1.5 whitespace-nowrap text-right">
+                                    <td className="px-2 py-1.5">
+                                        <span className="text-xs text-gray-900">
+                                            {vendor.businessModel || 'N/A'}
+                                        </span>
+                                    </td>
+                                    <td className="px-2 py-1.5">
+                                        <span className="text-xs text-gray-900">
+                                            {vendor.integrationSettings?.emailSettings?.supportEmail || 
+                                             vendor.contacts?.[0]?.email || 
+                                             'N/A'}
+                                        </span>
+                                    </td>
+                                    <td className="px-2 py-1.5 whitespace-nowrap text-right" onClick={(e) => e.stopPropagation()}>
                                         <div className="flex items-center justify-end space-x-1">
                                             <button
                                                 onClick={() => setViewingVendor(vendor)}
@@ -311,10 +320,12 @@ export default function VendorsPage() {
             />
 
             {/* View Vendor Modal */}
-            <ViewVendorModal
+            <VendorDetailModal
                 isOpen={!!viewingVendor}
                 onClose={() => setViewingVendor(null)}
                 vendor={viewingVendor}
+                onEdit={setEditingVendor}
+                onUpdate={handleUpdateVendor}
             />
         </div>
     );

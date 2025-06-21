@@ -1,18 +1,11 @@
 const { Firestore } = require('@google-cloud/firestore');
+const { prepareForFirestore } = require('../utils/firestore-utils');
+const { COLLECTIONS } = require('../config/constants');
 
 // Initialize Firestore with ADC
-const firestore = new Firestore({
-  projectId: process.env.GOOGLE_CLOUD_PROJECT,
+const firestore = global.firestore || new Firestore({
+  projectId: process.env.GOOGLE_CLOUD_PROJECT || process.env.GCP_PROJECT_ID,
 });
-
-// Collection names
-const COLLECTIONS = {
-  VENDORS: 'vendorConfigurations',
-  EXTRACTIONS: 'extractionResults',
-  RECONCILIATIONS: 'invoiceReconciliationSummaries',
-  RULES: 'reconciliationRules',
-  STATUS: 'reconciliationStatus'
-};
 
 // Base service class with common CRUD operations
 class BaseFirestoreService {
@@ -21,11 +14,14 @@ class BaseFirestoreService {
   }
 
   async create(data) {
-    const docRef = await this.collection.add({
+    // Clean data before sending to Firestore
+    const cleanedData = prepareForFirestore({
       ...data,
       createdAt: Firestore.Timestamp.now(),
       updatedAt: Firestore.Timestamp.now()
     });
+    
+    const docRef = await this.collection.add(cleanedData);
     const doc = await docRef.get();
     return { id: doc.id, ...doc.data() };
   }
@@ -53,10 +49,13 @@ class BaseFirestoreService {
   }
 
   async update(id, data) {
-    await this.collection.doc(id).update({
+    // Clean data before sending to Firestore
+    const cleanedData = prepareForFirestore({
       ...data,
       updatedAt: Firestore.Timestamp.now()
     });
+    
+    await this.collection.doc(id).update(cleanedData);
     return this.getById(id);
   }
 
@@ -86,6 +85,7 @@ const extractionService = new BaseFirestoreService(COLLECTIONS.EXTRACTIONS);
 const reconciliationService = new BaseFirestoreService(COLLECTIONS.RECONCILIATIONS);
 const rulesService = new BaseFirestoreService(COLLECTIONS.RULES);
 const statusService = new BaseFirestoreService(COLLECTIONS.STATUS);
+const extractionMetadataService = new BaseFirestoreService(COLLECTIONS.EXTRACTION_METADATA);
 
 module.exports = {
   BaseFirestoreService,
@@ -94,5 +94,6 @@ module.exports = {
   reconciliationService,
   rulesService,
   statusService,
+  extractionMetadataService,
   COLLECTIONS
 };

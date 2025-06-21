@@ -76,6 +76,17 @@ pubsub-debug.log
 *.temp
 .cache/
 
+# AI Assistant files
+CLAUDE.md
+
+# Log files
+*.log
+server.log
+client-dev.log
+server-dev.log
+vite.log
+nextjs.log
+
 # Lock files (optional - uncomment if you don't want to track)
 # package-lock.json
 # yarn.lock

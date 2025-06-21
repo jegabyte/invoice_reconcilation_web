@@ -2,6 +2,11 @@ import React from 'react';
 import { AlertCircle, CheckCircle, Info, XCircle } from 'lucide-react';
 import { getStatusColor } from '@/utils/formatters';
 
+export { default as SuccessNotification, ProcessingNotification } from './SuccessNotification';
+export { default as InvoicesShimmer } from './InvoicesShimmer';
+export { default as RulesShimmer } from './RulesShimmer';
+export { default as VendorsShimmer } from './VendorsShimmer';
+
 // ==========================================
 // LOADING COMPONENTS
 // ==========================================

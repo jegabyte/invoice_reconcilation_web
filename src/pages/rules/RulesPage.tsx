@@ -4,7 +4,7 @@ import { useRules } from '@/hooks/useRules';
 import { useVendors } from '@/hooks/useVendors';
 import AddRuleModal from '@/components/rules/AddRuleModal';
 import ViewRuleModal from '@/components/rules/ViewRuleModal';
-import { LoadingSpinner, Card } from '@/components/common';
+import { Card, RulesShimmer } from '@/components/common';
 import { ReconciliationRule } from '@/types/api.types';
 import { APP_CONFIG } from '@/config/app.config';
 
@@ -83,11 +83,7 @@ export default function RulesPage() {
     };
 
     if (loading) {
-        return (
-            <div className="flex items-center justify-center h-64">
-                <LoadingSpinner />
-            </div>
-        );
+        return <RulesShimmer />;
     }
 
     if (error) {
@@ -140,7 +136,7 @@ export default function RulesPage() {
                     <select
                         value={selectedVendor}
                         onChange={(e) => setSelectedVendor(e.target.value)}
-                        className="px-2 py-1 bg-white border border-gray-200 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none min-w-[120px]"
+                        className="px-2 py-1 bg-white border border-gray-200 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none min-w-[144px]"
                     >
                         <option value="">All Vendors</option>
                         {vendors.map(vendor => (
@@ -154,7 +150,7 @@ export default function RulesPage() {
                     <select
                         value={sortBy}
                         onChange={(e) => setSortBy(e.target.value as 'priority' | 'name' | 'status')}
-                        className="px-2 py-1 bg-white border border-gray-200 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none min-w-[120px]"
+                        className="px-2 py-1 bg-white border border-gray-200 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:outline-none min-w-[173px]"
                     >
                         {APP_CONFIG.filterOptions.rule.sortBy.map(option => (
                             <option key={option.value} value={option.value}>
@@ -309,6 +305,7 @@ export default function RulesPage() {
                     isOpen={showAddModal}
                     onClose={() => setShowAddModal(false)}
                     onSave={handleCreateRule}
+                    vendors={vendors}
                 />
             )}
 
@@ -319,6 +316,7 @@ export default function RulesPage() {
                     onClose={() => setEditingRule(null)}
                     onSave={(data) => handleUpdateRule(editingRule.id!, data)}
                     editingRule={editingRule}
+                    vendors={vendors}
                 />
             )}
 

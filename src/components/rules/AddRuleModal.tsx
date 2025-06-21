@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Modal } from '@/components/common';
-import { ReconciliationRule, RuleCondition } from '@/types/api.types';
+import { ReconciliationRule } from '@/types/api.types';
+import { RuleCondition } from '@/types/models';
 import { Plus, Trash2, ChevronDown, ChevronUp, Info } from 'lucide-react';
 import { ConditionForm } from './ConditionForm';
 
@@ -9,9 +10,10 @@ interface AddRuleModalProps {
     onClose: () => void;
     onSave: (rule: Partial<ReconciliationRule>) => void;
     editingRule?: ReconciliationRule | null;
+    vendors?: Array<{ id: string; vendorName: string; vendorCode: string }>;
 }
 
-export default function AddRuleModal({ isOpen, onClose, onSave, editingRule }: AddRuleModalProps) {
+export default function AddRuleModal({ isOpen, onClose, onSave, editingRule, vendors }: AddRuleModalProps) {
     const [formData, setFormData] = useState({
         ruleName: '',
         description: '',
@@ -105,8 +107,8 @@ export default function AddRuleModal({ isOpen, onClose, onSave, editingRule }: A
             newErrors.description = 'Description is required';
         }
 
-        if (formData.priority < 1 || formData.priority > 100) {
-            newErrors.priority = 'Priority must be between 1 and 100';
+        if (formData.priority < 1 || formData.priority > 1000) {
+            newErrors.priority = 'Priority must be between 1 and 1000';
         }
 
         if (formData.effectiveFrom && formData.effectiveTo) {
@@ -168,15 +170,19 @@ export default function AddRuleModal({ isOpen, onClose, onSave, editingRule }: A
                 ruleName: formData.ruleName,
                 description: formData.description,
                 vendorCode: formData.vendorCode,
+                vendorId: formData.vendorCode || '*',
                 entityType: formData.entityType,
                 ruleType: formData.ruleType,
+                category: 'CUSTOM',
                 priority: formData.priority,
                 isActive: formData.isActive,
                 ruleId,
                 version: editingRule?.version || 'v1.0',
                 businessModel,
                 actions,
-                conditions: formData.conditions
+                conditions: formData.conditions,
+                effectiveFrom: formData.effectiveFrom || new Date().toISOString(),
+                effectiveTo: formData.effectiveTo || null
             });
             onClose();
         }
@@ -225,12 +231,20 @@ export default function AddRuleModal({ isOpen, onClose, onSave, editingRule }: A
             title={editingRule ? 'Edit Rule' : 'Create New Rule'}
             size="lg"
         >
-            <form onSubmit={handleSubmit} className="space-y-4">
-                {/* Basic Information */}
-                <div className="bg-gray-50 p-3 rounded-lg space-y-3">
-                    <h3 className="text-base font-medium text-gray-900">Basic Information</h3>
-
-                    <div className="grid grid-cols-2 gap-3">
+            <form onSubmit={handleSubmit} className="space-y-3">
+                {/* Two Column Layout */}
+                <div className="grid grid-cols-2 gap-4">
+                    {/* Left Column */}
+                    <div className="space-y-3">
+                        {/* Basic Information */}
+                        <div className="bg-gray-50 p-3 rounded-lg">
+                            <h3 className="text-sm font-semibold text-gray-900 mb-2 flex items-center">
+                                <svg className="w-4 h-4 mr-1.5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                </svg>
+                                Basic Information
+                            </h3>
+                            <div className="space-y-2">
                         <div>
                             <label className="block text-sm font-medium text-gray-700">
                                 Rule ID*
@@ -297,10 +311,11 @@ export default function AddRuleModal({ isOpen, onClose, onSave, editingRule }: A
                                 className="mt-1 block w-full px-2.5 py-1.5 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm"
                             >
                                 <option value="">Select vendor...</option>
-                                <option value="EXPEDIA">EXPEDIA</option>
-                                <option value="CTRIP">CTRIP</option>
-                                <option value="HOTELBEDS">HOTELBEDS</option>
-                                <option value="PKFARE">PKFARE</option>
+                                {vendors && vendors.map(vendor => (
+                                    <option key={vendor.id} value={vendor.vendorCode}>
+                                        {vendor.vendorName}
+                                    </option>
+                                ))}
                                 <option value="*">GLOBAL (All Vendors)</option>
                             </select>
                         </div>
@@ -335,7 +350,7 @@ export default function AddRuleModal({ isOpen, onClose, onSave, editingRule }: A
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700">
-                                Priority* (1-100)
+                                Priority* (1-1000)
                             </label>
                             <input
                                 type="number"
@@ -345,7 +360,7 @@ export default function AddRuleModal({ isOpen, onClose, onSave, editingRule }: A
                                     errors.priority ? 'border-red-300' : ''
                                 }`}
                                 min="1"
-                                max="100"
+                                max="1000"
                                 required
                             />
                             {errors.priority && (
@@ -768,7 +783,7 @@ export default function AddRuleModal({ isOpen, onClose, onSave, editingRule }: A
                         type="submit"
                         className="px-3 py-1.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
                     >
-                        {editingRule ? 'Update' : 'Save'} & Activate
+                        {editingRule ? 'Update' : 'Save'}
                     </button>
                 </div>
             </form>

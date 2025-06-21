@@ -23,17 +23,19 @@ function AppContent() {
     const dispatch = useDispatch();
 
     useEffect(() => {
+        // Auto-login for development
+        const mockUser = {
+            id: '1',
+            email: 'admin@example.com',
+            name: 'Admin',
+            role: 'admin' as const
+        };
+        dispatch(loginSuccess(mockUser));
+        
         // Check for existing auth token on app load
         const token = localStorage.getItem('authToken');
         if (token) {
-            // In a real app, validate the token with the backend
-            const mockUser = {
-                id: '1',
-                email: 'admin@example.com',
-                name: 'Admin',
-                role: 'admin' as const
-            };
-            dispatch(loginSuccess(mockUser));
+            // Token exists, user is already logged in
         }
     }, [dispatch]);
 

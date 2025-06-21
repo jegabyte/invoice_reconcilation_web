@@ -1,9 +1,26 @@
 import { apiClient } from './client';
 import { API_ENDPOINTS } from './config';
-import type { ReconciliationRule } from '@/types/api.types';
+import type { ReconciliationRule, RuleCondition, RuleAction } from '@/types/api.types';
 
 // Convert API response to ReconciliationRule format
 function mapApiRuleToReconciliationRule(apiRule: any): ReconciliationRule & { vendorCode?: string; entityType?: string; apiRuleType?: string } {
+  // If the backend already transformed the data, use it with minimal mapping
+  if (apiRule.ruleId && apiRule.ruleName) {
+    return {
+      ...apiRule,
+      id: apiRule.id,
+      vendorId: apiRule.vendorCode || 'GLOBAL',
+      ruleType: apiRule.ruleType === 'HARD' ? 'VALIDATION' : apiRule.ruleType === 'SOFT' ? 'MATCHING' : apiRule.ruleType,
+      category: determineCategory(apiRule),
+      conditions: mapConditions(apiRule.conditions || []),
+      actions: mapActions(apiRule.actions || {}),
+      tolerance: null,
+      lastUsed: null,
+      usageCount: 0,
+    };
+  }
+  
+  // Otherwise do the full mapping from snake_case
   return {
     id: apiRule.rule_id || apiRule.id,
     vendorId: apiRule.vendor_code || 'GLOBAL',
@@ -24,16 +41,23 @@ function mapApiRuleToReconciliationRule(apiRule: any): ReconciliationRule & { ve
     } : null,
     effectiveFrom: apiRule.effective_from || new Date().toISOString(),
     effectiveTo: apiRule.effective_to || null,
-    createdBy: apiRule.metadata?.created_by || 'system',
-    createdAt: apiRule.metadata?.created_at || new Date().toISOString(),
-    updatedAt: apiRule.metadata?.updated_at || apiRule.metadata?.created_at || new Date().toISOString(),
+    createdBy: apiRule.metadata?.created_by || apiRule.createdBy || 'system',
+    createdAt: apiRule.metadata?.created_at || apiRule.createdAt || new Date().toISOString(),
+    updatedAt: apiRule.metadata?.updated_at || apiRule.metadata?.created_at || apiRule.updatedAt || new Date().toISOString(),
     lastUsed: null,
     usageCount: 0,
   };
 }
 
 function determineCategory(apiRule: any): ReconciliationRule['category'] {
-  if (apiRule.entity_type === 'INVOICE' || apiRule.conditions?.some((c: any) => c.type === 'DUPLICATE_CHECK')) {
+  // Handle conditions as either array or object
+  const conditionsArray = Array.isArray(apiRule.conditions) 
+    ? apiRule.conditions 
+    : apiRule.conditions 
+      ? Object.values(apiRule.conditions)
+      : [];
+      
+  if (apiRule.entity_type === 'INVOICE' || conditionsArray.some((c: any) => c.type === 'DUPLICATE_CHECK')) {
     return 'FINANCIAL';
   }
   if (apiRule.actions?.dispute_type === 'GUEST_NAME_MISMATCH') {
@@ -42,22 +66,35 @@ function determineCategory(apiRule: any): ReconciliationRule['category'] {
   return 'CUSTOM';
 }
 
-function mapConditions(apiConditions: any[]): ReconciliationRule['conditions'] {
-  return apiConditions.map((condition: any) => ({
-    field: condition.field || '',
+function mapConditions(apiConditions: any): RuleCondition[] {
+  // Handle conditions as either array or object
+  const conditionsArray = Array.isArray(apiConditions) 
+    ? apiConditions 
+    : apiConditions 
+      ? Object.values(apiConditions)
+      : [];
+      
+  return conditionsArray.map((condition: any) => ({
+    field: condition.field || condition.invoice_field || condition.oms_field || '',
     operator: condition.operator || 'EQUALS',
     value: condition.value || condition.configuration || {},
-    dataType: 'STRING',
+    dataType: condition.type || 'STRING',
   }));
 }
 
-function mapActions(apiActions: any): ReconciliationRule['actions'] {
+function mapActions(apiActions: any): RuleAction[] {
+  // Handle actions as either array or object
+  if (Array.isArray(apiActions)) {
+    return apiActions;
+  }
+  
   return [{
     type: apiActions.on_match === 'DISPUTED' ? 'FLAG' : 'AUTO_APPROVE',
     parameters: {
       dispute_type: apiActions.dispute_type,
       on_match: apiActions.on_match,
       on_mismatch: apiActions.on_mismatch,
+      warning_type: apiActions.warning_type,
     },
   }];
 }
@@ -120,50 +157,44 @@ class RulesApiService {
   }
 
   async createRule(ruleData: Omit<ReconciliationRule, 'id' | 'createdAt' | 'updatedAt' | 'lastUsed' | 'usageCount'>): Promise<{ success: boolean; data: ReconciliationRule; message: string }> {
-    // Since no API is configured for creation, return a dummy success response
-    const newRule: ReconciliationRule = {
-      ...ruleData,
-      id: `rule_${Date.now()}`,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      lastUsed: null,
-      usageCount: 0,
-    };
-    
-    return {
-      success: true,
-      data: newRule,
-      message: 'Rule saved successfully',
-    };
-  }
-
-  async updateRule(id: string, updates: Partial<ReconciliationRule>): Promise<{ success: boolean; data: ReconciliationRule; message: string }> {
-    // Since no API is configured for updates, return a dummy success response
     try {
-      const existingRule = await this.getRuleById(id);
-      const updatedRule = {
-        ...existingRule.data,
-        ...updates,
-        id,
-        updatedAt: new Date().toISOString(),
-      };
-      
+      const response = await apiClient.post<any>(API_ENDPOINTS.rules, ruleData);
       return {
         success: true,
-        data: updatedRule,
-        message: 'Rule saved successfully',
+        data: mapApiRuleToReconciliationRule(response),
+        message: 'Rule created successfully',
       };
     } catch (error) {
+      console.error('Error creating rule:', error);
       throw error;
     }
   }
 
-  async deleteRule(_id: string): Promise<{ success: boolean; message: string }> {
-    // Since no API is configured for deletion, return a dummy success response
-    return {
-      success: true,
-      message: 'Rule deleted successfully',
-    };
+  async updateRule(id: string, updates: Partial<ReconciliationRule>): Promise<{ success: boolean; data: ReconciliationRule; message: string }> {
+    try {
+      const response = await apiClient.put<any>(API_ENDPOINTS.rule(id), updates);
+      return {
+        success: true,
+        data: mapApiRuleToReconciliationRule(response),
+        message: 'Rule updated successfully',
+      };
+    } catch (error) {
+      console.error('Error updating rule:', error);
+      throw error;
+    }
+  }
+
+  async deleteRule(id: string): Promise<{ success: boolean; message: string }> {
+    try {
+      await apiClient.delete(API_ENDPOINTS.rule(id));
+      return {
+        success: true,
+        message: 'Rule deleted successfully',
+      };
+    } catch (error) {
+      console.error('Error deleting rule:', error);
+      throw error;
+    }
   }
 
   async toggleRuleStatus(id: string): Promise<{ success: boolean; data: ReconciliationRule; message: string }> {

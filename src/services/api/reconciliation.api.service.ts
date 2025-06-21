@@ -95,18 +95,12 @@ class ReconciliationApiService {
     };
   }> {
     try {
-      const response = await apiClient.get<any[]>(API_ENDPOINTS.invoiceSummaries);
-      let mappedData = (response || []).map(mapInvoiceSummaryToReconciliation);
+      const response = await apiClient.get<InvoiceReconciliationSummary[]>(API_ENDPOINTS.reconciliationSummaries);
+      let data = response || [];
       
-      // Apply filters
+      // Apply filters if needed
       if (filters?.vendorId) {
-        mappedData = mappedData.filter(r => r.vendorId === filters.vendorId);
-      }
-      if (filters?.status) {
-        mappedData = mappedData.filter(r => r.status === filters.status);
-      }
-      if (filters?.approvalStatus) {
-        mappedData = mappedData.filter(r => r.approvalStatus === filters.approvalStatus);
+        data = data.filter(r => r.vendor_name === filters.vendorId);
       }
       
       // Pagination
@@ -114,7 +108,7 @@ class ReconciliationApiService {
       const limit = filters?.limit || 20;
       const start = (page - 1) * limit;
       const end = start + limit;
-      const paginatedData = mappedData.slice(start, end);
+      const paginatedData = data.slice(start, end);
       
       return {
         success: true,
@@ -122,8 +116,8 @@ class ReconciliationApiService {
         pagination: {
           page,
           limit,
-          total: mappedData.length,
-          totalPages: Math.ceil(mappedData.length / limit),
+          total: data.length,
+          totalPages: Math.ceil(data.length / limit),
         },
       };
     } catch (error) {
@@ -135,9 +129,9 @@ class ReconciliationApiService {
   async getReconciliationSummaryById(id: string): Promise<{ success: boolean; data: InvoiceReconciliationSummary }> {
     try {
       // Since the API returns all summaries, we need to fetch all and filter
-      const response = await apiClient.get<any[]>(API_ENDPOINTS.invoiceSummaries);
+      const response = await apiClient.get<InvoiceReconciliationSummary[]>(API_ENDPOINTS.reconciliationSummaries);
       const summaries = response || [];
-      const matchingSummary = summaries.find(s => s.extraction_id === id || s.invoice_number === id);
+      const matchingSummary = summaries.find(s => s.id === id || s.extraction_id === id);
       
       if (!matchingSummary) {
         throw {
@@ -149,7 +143,7 @@ class ReconciliationApiService {
       
       return {
         success: true,
-        data: mapInvoiceSummaryToReconciliation(matchingSummary),
+        data: matchingSummary,
       };
     } catch (error: any) {
       if (error.code === 'NOT_FOUND') {
@@ -225,7 +219,7 @@ class ReconciliationApiService {
   async getReconciliationStatus(invoiceId: string): Promise<{ success: boolean; data: ReconciliationStatus }> {
     // Since no specific status endpoint exists, create status from invoice summary
     try {
-      const response = await apiClient.get<any[]>(API_ENDPOINTS.invoiceSummaries);
+      const response = await apiClient.get<any[]>(API_ENDPOINTS.reconciliationSummaries);
       const summaries = response || [];
       const matchingSummary = summaries.find(s => s.extraction_id === invoiceId || s.invoice_number === invoiceId);
       

@@ -48,6 +48,38 @@
 }
 
 /* Loading animation */
+@keyframes slide-in-right {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes progress-bar {
+    0% {
+        width: 0%;
+    }
+    50% {
+        width: 70%;
+    }
+    100% {
+        width: 100%;
+    }
+}
+
+.animate-slide-in-right {
+    animation: slide-in-right 0.3s ease-out;
+}
+
+.animate-progress-bar {
+    animation: progress-bar 3s ease-in-out infinite;
+}
+
+/* Loading animation */
 @keyframes shimmer {
     0% {
         background-position: -200% 0;
