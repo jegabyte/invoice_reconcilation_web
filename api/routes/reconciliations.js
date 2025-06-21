@@ -5,7 +5,12 @@ const { reconciliationService, extractionMetadataService, BaseFirestoreService }
 
 // Helper function to map Firestore data to API format
 function mapFirestoreToApi(firestoreData, extractionMetadata = null) {
-  const lineItemStatus = firestoreData.status_summary || {};
+  // Ensure safe defaults for potentially missing fields
+  const lineItemStatus = firestoreData.status_summary || {
+    MATCHED: 0,
+    DISPUTED: 0,
+    HOLD_PENDING_REVIEW: 0
+  };
   const disputeSummary = firestoreData.dispute_type_summary || {};
   
   // Comment out to reduce log noise
@@ -60,9 +65,13 @@ function mapFirestoreToApi(firestoreData, extractionMetadata = null) {
     total_invoice_amount: firestoreData.total_invoice_amount,
     total_oms_amount: firestoreData.total_oms_amount,
     difference_amount: firestoreData.difference_amount,
-    total_line_items: firestoreData.total_line_items,
-    status_summary: firestoreData.status_summary,
-    dispute_type_summary: firestoreData.dispute_type_summary,
+    total_line_items: firestoreData.total_line_items || 0,
+    status_summary: firestoreData.status_summary || {
+      MATCHED: 0,
+      DISPUTED: 0,
+      HOLD_PENDING_REVIEW: 0
+    },
+    dispute_type_summary: firestoreData.dispute_type_summary || {},
     processing_completed: firestoreData.processing_completed,
     processing_version: firestoreData.processing_version,
     processing_status: firestoreData.processing_status || 'PROCESSING',

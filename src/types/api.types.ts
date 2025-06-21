@@ -51,13 +51,13 @@ export interface InvoiceReconciliationSummary {
     timestamp: string;
     failed_pages: number;
     total_pages: number;
-    status_summary: Record<string, number>;
+    status_summary?: Record<string, number>;
     processing_version: string;
     vendor_name: string;
-    total_invoice_amount: number;
-    total_line_items: number;
+    total_invoice_amount?: number;
+    total_line_items?: number;
     extraction_id: string;
-    dispute_type_summary: Record<string, number>;
+    dispute_type_summary?: Record<string, number>;
     total_oms_amount: number;
     difference_amount: number;
     run_id?: string;

@@ -67,15 +67,15 @@ export default function InvoicesPage() {
         totalInvoices: filteredInvoices.length,
         processed: filteredInvoices.filter(i => {
             const disputeCount = Object.values(i.dispute_type_summary || {}).reduce((a, b) => a + b, 0);
-            const holdCount = i.status_summary['HOLD_PENDING_REVIEW'] || 0;
+            const holdCount = i.status_summary?.['HOLD_PENDING_REVIEW'] || 0;
             return disputeCount === 0 && holdCount === 0;
         }).length,
-        onHold: filteredInvoices.reduce((sum, i) => sum + (i.status_summary['HOLD_PENDING_REVIEW'] || 0), 0),
+        onHold: filteredInvoices.reduce((sum, i) => sum + (i.status_summary?.['HOLD_PENDING_REVIEW'] || 0), 0),
         disputed: filteredInvoices.reduce((sum, i) => {
             return sum + Object.values(i.dispute_type_summary || {}).reduce((a, b) => a + b, 0);
         }, 0),
-        totalAmount: filteredInvoices.reduce((sum, i) => sum + i.total_invoice_amount, 0),
-        totalLineItems: filteredInvoices.reduce((sum, i) => sum + i.total_line_items, 0)
+        totalAmount: filteredInvoices.reduce((sum, i) => sum + (i.total_invoice_amount || 0), 0),
+        totalLineItems: filteredInvoices.reduce((sum, i) => sum + (i.total_line_items || 0), 0)
     };
 
     const handleViewDetails = (invoiceId: string) => {
@@ -337,8 +337,8 @@ export default function InvoicesPage() {
                         ) : (
                             filteredInvoices.map((invoice, index) => {
                                 const disputeCount = Object.values(invoice.dispute_type_summary || {}).reduce((a, b) => a + b, 0);
-                                const holdCount = invoice.status_summary['HOLD_PENDING_REVIEW'] || 0;
-                                const processedCount = invoice.total_line_items - holdCount - disputeCount;
+                                const holdCount = invoice.status_summary?.['HOLD_PENDING_REVIEW'] || 0;
+                                const processedCount = (invoice.total_line_items || 0) - holdCount - disputeCount;
                                 
                                 // Format dates
                                 const invoiceDate = invoice.invoiceDate ? 
@@ -380,7 +380,7 @@ export default function InvoicesPage() {
                                                 {invoice.invoiceCurrency && invoice.invoiceCurrency !== 'USD' && (
                                                     <span className="text-gray-500 mr-1">{invoice.invoiceCurrency}</span>
                                                 )}
-                                                {formatCurrency(invoice.total_invoice_amount)}
+                                                {formatCurrency(invoice.total_invoice_amount || 0)}
                                             </div>
                                         </td>
                                         <td className="px-4 py-3 whitespace-nowrap text-center">
