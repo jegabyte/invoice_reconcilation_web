@@ -3,7 +3,7 @@ const path = require('path');
 
 // Initialize Google Cloud Storage
 const storage = new Storage({
-  projectId: process.env.GOOGLE_CLOUD_PROJECT,
+  projectId: process.env.GCP_PROJECT_ID,
 });
 
 class StorageService {
@@ -16,20 +16,18 @@ class StorageService {
     // Get bucket name from environment variables - try multiple possible env var names
     this.BUCKET_NAME = process.env.STORAGE_BUCKET_NAME || 
                        process.env.GCS_BUCKET_NAME || 
-                       process.env.NEXT_PUBLIC_GCS_BUCKET_NAME ||
-                       process.env.GOOGLE_CLOUD_PROJECT ||
                        'aiva-invoice-recon-demo'; // Fallback to known bucket name
     
     this.UPLOAD_PATH = process.env.STORAGE_UPLOAD_PATH || 'invoices/uploads';
     
     console.log('Storage Service Configuration:', {
-      projectId: process.env.GOOGLE_CLOUD_PROJECT,
+      projectId: process.env.GCP_PROJECT_ID,
       bucketName: this.BUCKET_NAME,
       uploadPath: this.UPLOAD_PATH,
       allEnvVars: {
         STORAGE_BUCKET_NAME: process.env.STORAGE_BUCKET_NAME,
         GCS_BUCKET_NAME: process.env.GCS_BUCKET_NAME,
-        GOOGLE_CLOUD_PROJECT: process.env.GOOGLE_CLOUD_PROJECT
+        GCP_PROJECT_ID: process.env.GCP_PROJECT_ID
       }
     });
     
@@ -63,8 +61,10 @@ class StorageService {
       const minute = String(now.getMinutes()).padStart(2, '0');
       const second = String(now.getSeconds()).padStart(2, '0');
       
+      // Convert vendorId to lowercase for folder name consistency
+      const vendorFolder = vendorId.toLowerCase();
       // Keep original filename as-is
-      const filePath = `${this.UPLOAD_PATH}/${vendorId}/${year}/${month}/${day}/${hour}-${minute}-${second}/${fileName}`;
+      const filePath = `${this.UPLOAD_PATH}/${vendorFolder}/${year}/${month}/${day}/${hour}-${minute}-${second}/${fileName}`;
 
       console.log('Uploading file:', {
         bucket: this.BUCKET_NAME,

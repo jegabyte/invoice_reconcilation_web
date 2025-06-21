@@ -4,7 +4,7 @@ const { Firestore } = require('@google-cloud/firestore');
 const { COLLECTIONS } = require('../config/constants');
 
 const firestore = new Firestore({
-  projectId: process.env.GOOGLE_CLOUD_PROJECT || process.env.GCP_PROJECT_ID,
+  projectId: process.env.GCP_PROJECT_ID,
 });
 
 // Get extraction parts by extraction_id

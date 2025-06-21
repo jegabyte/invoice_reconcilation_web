@@ -93,6 +93,13 @@ companyRegistration?: string;
 companyRegistration: data.company_registration || data.companyRegistration
 ```
 
+## Storage Notes
+
+- Vendor folders in GCS are automatically converted to lowercase (e.g., "CTRIP" → "ctrip")
+- Environment variables consolidated:
+  - Use `GCP_PROJECT_ID` instead of `GOOGLE_CLOUD_PROJECT`
+  - Use `GCS_BUCKET_NAME` for storage bucket
+
 ## Testing Checklist
 
 - [ ] TypeScript interfaces updated

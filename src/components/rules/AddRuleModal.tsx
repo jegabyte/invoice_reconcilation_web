@@ -276,6 +276,7 @@ export default function AddRuleModal({ isOpen, onClose, onSave, editingRule, ven
                             )}
                         </div>
                     </div>
+                </div>
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700">
@@ -294,7 +295,8 @@ export default function AddRuleModal({ isOpen, onClose, onSave, editingRule, ven
                             <p className="mt-1 text-sm text-red-600">{errors.description}</p>
                         )}
                     </div>
-                </div>
+                        </div>
+                    </div>
 
                 {/* Configuration */}
                 <div className="bg-gray-50 p-3 rounded-lg space-y-3">

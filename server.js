@@ -11,10 +11,9 @@ console.log('.env loaded:', envResult.error ? 'Failed' : 'Success');
 
 // Debug: Log important environment variables
 console.log('Environment variables loaded:');
-console.log('- GOOGLE_CLOUD_PROJECT:', process.env.GOOGLE_CLOUD_PROJECT);
 console.log('- GCP_PROJECT_ID:', process.env.GCP_PROJECT_ID);
-console.log('- STORAGE_BUCKET_NAME:', process.env.STORAGE_BUCKET_NAME);
 console.log('- GCS_BUCKET_NAME:', process.env.GCS_BUCKET_NAME);
+console.log('- STORAGE_BUCKET_NAME:', process.env.STORAGE_BUCKET_NAME);
 console.log('- STORAGE_UPLOAD_PATH:', process.env.STORAGE_UPLOAD_PATH);
 const express = require('express');
 const path = require('path');
@@ -25,7 +24,7 @@ const app = express();
 const PORT = SERVER_CONFIG.PORT;
 
 // Initialize Firestore with ADC (no API key needed)
-const projectId = process.env.GOOGLE_CLOUD_PROJECT || process.env.GCP_PROJECT_ID || process.env.NEXT_PUBLIC_GCP_PROJECT_ID;
+const projectId = process.env.GCP_PROJECT_ID;
 const firestore = new Firestore({
   projectId: projectId,
   // ADC will be used automatically

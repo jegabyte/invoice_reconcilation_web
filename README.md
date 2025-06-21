@@ -56,19 +56,18 @@ gcloud config set project YOUR_PROJECT_ID
 Copy the example environment file:
 
 ```bash
-cp .env.example .env.local
+cp .env.local.example .env.local
 ```
 
 Edit `.env.local` and update the following required variables:
 
 ```bash
 # Required: Your Google Cloud Project ID
-GOOGLE_CLOUD_PROJECT=your-project-id
 GCP_PROJECT_ID=your-project-id
 
-# Required: Storage bucket for file uploads
-STORAGE_BUCKET_NAME=your-storage-bucket
+# Required: Storage bucket for file uploads  
 GCS_BUCKET_NAME=your-storage-bucket
+STORAGE_BUCKET_NAME=your-storage-bucket
 ```
 
 ### 5. Firestore Collections
