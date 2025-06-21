@@ -15,8 +15,7 @@ class StorageService {
   updateConfiguration() {
     // Get bucket name from environment variables - try multiple possible env var names
     this.BUCKET_NAME = process.env.STORAGE_BUCKET_NAME || 
-                       process.env.GCS_BUCKET_NAME || 
-                       'aiva-invoice-recon-demo'; // Fallback to known bucket name
+                       process.env.GCS_BUCKET_NAME;
     
     this.UPLOAD_PATH = process.env.STORAGE_UPLOAD_PATH || 'invoices/uploads';
     
@@ -52,19 +51,10 @@ class StorageService {
         throw new Error('Storage bucket name not configured. Please set STORAGE_BUCKET_NAME in environment variables.');
       }
 
-      // Generate a timestamp folder structure (YYYY/MM/DD/HH-MM-SS)
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const day = String(now.getDate()).padStart(2, '0');
-      const hour = String(now.getHours()).padStart(2, '0');
-      const minute = String(now.getMinutes()).padStart(2, '0');
-      const second = String(now.getSeconds()).padStart(2, '0');
-      
       // Convert vendorId to lowercase for folder name consistency
       const vendorFolder = vendorId.toLowerCase();
-      // Keep original filename as-is
-      const filePath = `${this.UPLOAD_PATH}/${vendorFolder}/${year}/${month}/${day}/${hour}-${minute}-${second}/${fileName}`;
+      // Simple folder structure: pending/vendor/filename
+      const filePath = `${this.UPLOAD_PATH}/${vendorFolder}/${fileName}`;
 
       console.log('Uploading file:', {
         bucket: this.BUCKET_NAME,
