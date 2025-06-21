@@ -99,6 +99,7 @@ companyRegistration: data.company_registration || data.companyRegistration
 - Environment variables consolidated:
   - Use `GCP_PROJECT_ID` instead of `GOOGLE_CLOUD_PROJECT`
   - Use `GCS_BUCKET_NAME` for storage bucket
+  - Use `FIRESTORE_DATABASE_ID` to specify Firestore database (default: '(default)')
 
 ## Testing Checklist
 

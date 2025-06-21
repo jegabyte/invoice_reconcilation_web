@@ -68,6 +68,9 @@ GCP_PROJECT_ID=your-project-id
 # Required: Storage bucket for file uploads  
 GCS_BUCKET_NAME=your-storage-bucket
 STORAGE_BUCKET_NAME=your-storage-bucket
+
+# Optional: Firestore database ID (default: '(default)')
+FIRESTORE_DATABASE_ID=(default)
 ```
 
 ### 5. Firestore Collections

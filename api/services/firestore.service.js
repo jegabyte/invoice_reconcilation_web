@@ -5,6 +5,7 @@ const { COLLECTIONS } = require('../config/constants');
 // Initialize Firestore with ADC
 const firestore = global.firestore || new Firestore({
   projectId: process.env.GCP_PROJECT_ID,
+  databaseId: process.env.FIRESTORE_DATABASE_ID || '(default)',
 });
 
 // Base service class with common CRUD operations

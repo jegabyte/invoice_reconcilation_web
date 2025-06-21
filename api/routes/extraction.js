@@ -5,6 +5,7 @@ const { COLLECTIONS } = require('../config/constants');
 
 const firestore = new Firestore({
   projectId: process.env.GCP_PROJECT_ID,
+  databaseId: process.env.FIRESTORE_DATABASE_ID || '(default)',
 });
 
 // Get extraction parts by extraction_id
